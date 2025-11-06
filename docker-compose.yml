@@ -1,0 +1,168 @@
+# Prismify - Local Development Environment
+# Docker Compose configuration for PostgreSQL, Redis, and optional MinIO
+# 
+# Usage:
+#   docker-compose up -d           # Start all services
+#   docker-compose down            # Stop all services
+#   docker-compose logs -f         # View logs
+#   docker-compose ps              # Check status
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  # Alternative to Supabase for local development
+  postgres:
+    image: postgres:16-alpine
+    container_name: prismify-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-prismify}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-prismify_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-prismify_dev}
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-scripts:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-prismify}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prismify-network
+
+  # Redis Cache & Queue
+  # Used for: rate limiting, caching AI responses, background jobs
+  redis:
+    image: redis:7-alpine
+    container_name: prismify-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis_dev_password} --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - prismify-network
+
+  # MinIO Object Storage (Optional)
+  # Use for: PDF reports, CSV exports, user uploads
+  # Alternative to Supabase Storage
+  minio:
+    image: minio/minio:latest
+    container_name: prismify-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # Console
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - prismify-network
+    profiles:
+      - with-storage  # Only start with: docker-compose --profile with-storage up
+
+  # PostgreSQL Admin (Optional)
+  # Web UI for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: prismify-pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@prismify.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - prismify-network
+    profiles:
+      - with-admin  # Only start with: docker-compose --profile with-admin up
+
+  # Redis Commander (Optional)
+  # Web UI for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: prismify-redis-commander
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      REDIS_HOSTS: "local:redis:6379:0:${REDIS_PASSWORD:-redis_dev_password}"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - prismify-network
+    profiles:
+      - with-admin  # Only start with: docker-compose --profile with-admin up
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  minio_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  prismify-network:
+    driver: bridge
+    name: prismify-network
+
+# Usage Examples:
+# 
+# Start core services (Postgres + Redis):
+#   docker-compose up -d
+#
+# Start with storage (Postgres + Redis + MinIO):
+#   docker-compose --profile with-storage up -d
+#
+# Start with admin tools (Postgres + Redis + PgAdmin + Redis Commander):
+#   docker-compose --profile with-admin up -d
+#
+# Start everything:
+#   docker-compose --profile with-storage --profile with-admin up -d
+#
+# View logs:
+#   docker-compose logs -f postgres
+#   docker-compose logs -f redis
+#
+# Stop all services:
+#   docker-compose down
+#
+# Stop and remove volumes (WARNING: Deletes all data):
+#   docker-compose down -v
+#
+# Access Services:
+#   PostgreSQL: localhost:5432
+#   Redis: localhost:6379
+#   MinIO API: localhost:9000
+#   MinIO Console: http://localhost:9001
+#   PgAdmin: http://localhost:5050
+#   Redis Commander: http://localhost:8081

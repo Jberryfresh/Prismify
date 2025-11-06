@@ -11,7 +11,12 @@
     "test:agent": "node scripts/test-seo-agent.js",
     "test:db": "node scripts/test-database.js",
     "migrate": "node scripts/run-migration.js",
-    "verify": "node scripts/verify-database.js"
+    "migrate:local": "node scripts/run-migration-local.js",
+    "verify": "node scripts/verify-database.js",
+    "docker:start": "pwsh scripts/dev-start.ps1",
+    "docker:stop": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:ps": "docker-compose ps"
   },
   "keywords": [
     "seo",
@@ -27,7 +32,8 @@
     "@anthropic-ai/sdk": "^0.30.0",
     "@google/generative-ai": "^0.21.0",
     "@supabase/supabase-js": "^2.79.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "pg": "^8.16.3"
   },
   "engines": {
     "node": ">=18.0.0"
