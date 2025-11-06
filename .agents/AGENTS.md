@@ -100,6 +100,47 @@ A task is only complete when:
 5. ✅ Acceptance criteria met and verified
 6. ✅ PR linked in TODO with completion notes
 
+### ⚠️ CRITICAL: Task Completion & Verification
+
+**DO NOT move to the next task until the current task is 100% complete and verified working.**
+
+Before marking a task as complete `[✓]`, you MUST:
+
+1. **Test the functionality** - Run the code/script/feature and verify it works as expected
+2. **Verify acceptance criteria** - Check every single acceptance criterion is met
+3. **Test error cases** - Ensure proper error handling (don't just test happy path)
+4. **Check dependencies** - Verify the task doesn't break existing functionality
+5. **Run relevant tests** - Execute unit tests, integration tests, or manual tests
+6. **Document verification** - Record what tests you ran and the results in the completion notes
+
+**Example of proper verification:**
+```markdown
+- [✓] 1.2.2 Add helper script to generate secure JWT secrets (P1)
+  CompletedBy: GitHub Copilot
+  CompletedAt: 2025-11-06 15:30 UTC
+  TestsRun: Executed `node scripts/generate-secrets.js` - outputs 512-bit secrets correctly
+  Notes: Script generates cryptographically secure secrets using crypto.randomBytes().
+         Tested on Windows - outputs to terminal successfully.
+         Verified secrets are different on each run.
+         Confirmed no files are created (output to stdout only).
+```
+
+**❌ DO NOT:**
+- Mark tasks complete without testing them
+- Move to next task if current task has errors
+- Assume code works without running it
+- Skip verification steps "to save time"
+- Leave broken functionality behind
+
+**✅ DO:**
+- Test every feature you build before marking complete
+- Fix all bugs and errors before moving on
+- Run scripts/commands to verify they work
+- Check logs and outputs for errors
+- Document what testing you performed
+
+**Quality over speed - A working feature today is better than 10 broken features tomorrow.**
+
 ### Branch Naming Convention
 
 Use format: `phase-{X}.{Y}-{short-description}`
