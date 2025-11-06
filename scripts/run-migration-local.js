@@ -14,6 +14,62 @@ dotenv.config({ path: join(process.cwd(), 'docker', '.env') });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+/**
+ * Validates SQL migration file before execution
+ * @param {string} sqlContent - The SQL file content to validate
+ * @param {number} fileSize - Size of the file in bytes
+ * @throws {Error} If validation fails
+ */
+function validateMigrationSQL(sqlContent, fileSize) {
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const ALLOWED_SQL_KEYWORDS = [
+        'CREATE', 'ALTER', 'DROP', 'INSERT', 'UPDATE', 'DELETE',
+        'GRANT', 'REVOKE', 'COMMENT', 'SET', 'BEGIN', 'COMMIT',
+        '--', '/*'  // Allow comments at the start
+    ];
+    
+    // Check 1: File size validation
+    if (fileSize > MAX_FILE_SIZE) {
+        throw new Error(`Migration file too large: ${(fileSize / 1024 / 1024).toFixed(2)}MB (max: 10MB)`);
+    }
+    
+    // Check 2: Not empty
+    if (!sqlContent || sqlContent.trim().length === 0) {
+        throw new Error('Migration file is empty');
+    }
+    
+    // Check 3: Verify it starts with expected SQL keywords or comments
+    const trimmedContent = sqlContent.trim();
+    const startsWithValidKeyword = ALLOWED_SQL_KEYWORDS.some(keyword => {
+        const upperContent = trimmedContent.toUpperCase();
+        return upperContent.startsWith(keyword) || 
+               upperContent.split('\n')[0].includes(keyword);
+    });
+    
+    if (!startsWithValidKeyword) {
+        throw new Error('Migration file does not start with expected SQL keywords or comments');
+    }
+    
+    // Check 4: Look for suspicious patterns (basic sanity check)
+    const suspiciousPatterns = [
+        /eval\(/i,
+        /<script>/i,
+        /javascript:/i,
+        /\bexec\s*\(/i  // Suspicious exec calls
+    ];
+    
+    for (const pattern of suspiciousPatterns) {
+        if (pattern.test(sqlContent)) {
+            throw new Error(`Migration file contains suspicious pattern: ${pattern}`);
+        }
+    }
+    
+    console.log('✓ SQL validation passed');
+    console.log(`  - File size: ${(fileSize / 1024).toFixed(2)} KB (within 10MB limit)`);
+    console.log(`  - Starts with valid SQL keywords`);
+    console.log(`  - No suspicious patterns detected\n`);
+}
+
 async function runMigration() {
     console.log('═══════════════════════════════════════════════════════');
     console.log('🚀 PRISMIFY LOCAL DATABASE MIGRATION');
@@ -47,6 +103,10 @@ async function runMigration() {
         console.log('✓ Migration file loaded');
         console.log(`  Size: ${(migrationSQL.length / 1024).toFixed(2)} KB`);
         console.log(`  Lines: ${migrationSQL.split('\n').length}\n`);
+        
+        // Validate the migration file before execution
+        console.log('🔒 Validating migration file...');
+        validateMigrationSQL(migrationSQL, migrationSQL.length);
         
         // Execute the migration
         console.log('⚙️  Running migration...');
@@ -89,6 +149,10 @@ async function runMigration() {
         } else if (error.code === '42P07') {
             console.error('💡 Tables already exist - This is OK!');
             console.error('   Your database is already set up.\n');
+        } else if (error.message.includes('Migration file')) {
+            console.error('💡 SQL validation failed!');
+            console.error('   The migration file did not pass security checks.');
+            console.error('   Please review the file for issues.\n');
         }
         
         process.exit(1);
