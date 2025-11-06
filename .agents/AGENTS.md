@@ -10,6 +10,8 @@
 
 This document defines how AI coding agents should communicate, act, and collaborate with developers during software development. These rules are **project-agnostic** and can be adapted to any codebase, technology stack, or development workflow.
 
+**🚨 IMPORTANT FOR PRISMIFY**: This project will eventually operate with a **multi-agent team** (COO Agent, Sales Agent, Marketing Agent, Customer Success Agent, etc.) that handles business operations autonomously. See `.agents/AGENT_TEAM_ARCHITECTURE.md` for the complete multi-agent system design. This document covers agent behavior for development work only.
+
 ### Core Philosophy
 
 > **Be a disciplined, efficient collaborator.** Focus on accuracy, brevity, and stability. Empower the user's direction rather than dominating it.

@@ -14,11 +14,13 @@
 
 - **Automates Complex SEO Tasks:** Replaces hours of manual SEO work with AI-powered automation that scales effortlessly across unlimited websites.
 
+- **Operates Autonomously:** Multi-agent system handles sales, marketing, customer support, and operations 24/7 with minimal human intervention. (See `.agents/AGENT_TEAM_ARCHITECTURE.md`)
+
 - **Provides Continuous Monitoring:** Tracks SEO scores, keyword rankings, and site health over time with automated alerts for issues and opportunities.
 
 - **Democratizes SEO Expertise:** Makes professional-grade SEO accessible to small businesses, agencies, and content creators who can't afford $5,000/month consultants.
 
-- **Scales Without Human Bottlenecks:** Operates through AI agent orchestration with minimal customer support, allowing rapid growth with lean operations.
+- **Scales Without Human Bottlenecks:** Operates through AI agent orchestration (COO Agent, Sales Agent, Marketing Agent, Customer Success Agent, etc.) allowing rapid growth with lean operations.
 
 ### Core Objective
 
@@ -147,14 +149,16 @@
 
 **Backend:**
 - Existing SEOAgent.js (3,083 lines production-ready code) wrapped in Express REST API
+- Multi-Agent System (COO, Sales, Marketing, Support, Success, Analytics, Billing, Infrastructure)
 - PostgreSQL via Supabase for user data, audit history, subscription management
-- Redis for rate limiting, caching, and background job queues
+- Redis for rate limiting, caching, agent communication, and background job queues
 - Stripe for subscription billing and payment processing
 
 **AI Integration:**
 - Google Gemini API for AI-powered optimization suggestions (currently $0 cost with free tier)
 - Fallback to OpenAI GPT-4 for enterprise customers requiring higher throughput
-- Agent orchestration framework for coordinating multiple AI tasks
+- Agent orchestration framework for coordinating multiple AI agents (see `.agents/AGENT_TEAM_ARCHITECTURE.md`)
+- GPT-4/Claude for COO Agent, Sales Agent, Marketing Agent (reasoning-capable models)
 
 **Infrastructure:**
 - Vercel for frontend hosting (serverless, auto-scaling)
@@ -193,15 +197,19 @@
 
 ### Phase 2: Market Penetration (Months 7-18)
 - Scale to 500+ customers through proven acquisition channels
+- **Deploy autonomous Sales Agent** for cold outreach and demo automation
+- **Deploy Marketing Agent** for content creation, SEO, and ad management
 - Expand feature set based on customer requests (competitor analysis, rank tracking)
 - Build integration partnerships with major CMS platforms
-- Hire first support team member
+- Hire first support team member (agents handle 90% of tickets autonomously)
 
 ### Phase 3: Platform Expansion (Year 2-3)
 - Launch API for white-label and B2B partnerships
+- **Full multi-agent team operational** (COO, Sales, Marketing, Support, Success, Analytics, Billing, Infrastructure)
 - Develop mobile app for on-the-go SEO monitoring
 - Add advanced features: backlink analysis, SERP position tracking, content gap analysis
 - Expand to international markets with multi-language support
+- **Operating model**: CEO + AI Agent Team + 2-3 human specialists = $1-2M ARR
 
 ### Phase 4: Enterprise & Exit Options (Year 3-5)
 - Build enterprise tier with custom SLAs and dedicated infrastructure
