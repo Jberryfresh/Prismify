@@ -269,10 +269,13 @@ async function seedDatabase() {
         console.log('📊 Creating SEO analyses...');
         let analysisCount = 0;
         
+        // Number of analyses per project
+        const MIN_ANALYSES = 1;
+        const MAX_ANALYSES = 3;
+
         for (const project of projectIds) {
             // Create 1-3 analyses per project
-            const numAnalyses = Math.floor(Math.random() * 3) + 1;
-            
+            const numAnalyses = Math.floor(Math.random() * (MAX_ANALYSES - MIN_ANALYSES + 1)) + MIN_ANALYSES;
             for (let i = 0; i < numAnalyses; i++) {
                 const analysis = SAMPLE_ANALYSES[i % SAMPLE_ANALYSES.length];
                 
