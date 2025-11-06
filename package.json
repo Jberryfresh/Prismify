@@ -12,6 +12,7 @@
     "test:db": "node scripts/test-database.js",
     "migrate": "node scripts/run-migration.js",
     "migrate:local": "node scripts/run-migration-local.js",
+    "seed": "node scripts/seed-data.js",
     "verify": "node scripts/verify-database.js",
     "docker:start": "pwsh scripts/dev-start.ps1",
     "docker:stop": "docker-compose down",

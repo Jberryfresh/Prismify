@@ -19,19 +19,19 @@ async function runMigration() {
     console.log('🚀 PRISMIFY LOCAL DATABASE MIGRATION');
     console.log('═══════════════════════════════════════════════════════\n');
     
-    // Local PostgreSQL connection
-    const config = {
-        host: 'localhost',
-        port: 5432,
-        database: process.env.POSTGRES_DB || 'prismify_dev',
-        user: process.env.POSTGRES_USER || 'prismify',
-        password: process.env.POSTGRES_PASSWORD || 'prismify_dev_password_change_me',
-    };
-    
     console.log('🔌 Connecting to local PostgreSQL...');
     console.log(`   Host: ${config.host}:${config.port}`);
     console.log(`   Database: ${config.database}`);
     console.log(`   User: ${config.user}\n`);
+    
+    // Local PostgreSQL connection
+    const config = {
+        host: 'localhost',
+        port: 5432,
+        database: 'prismify_dev',
+        user: 'prismify',
+        password: 'prismify_dev_password',
+    };
     
     const client = new pg.Client(config);
     
