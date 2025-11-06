@@ -129,15 +129,14 @@ function main() {
 }
 
 // Execute if run directly (not imported)
-if (import.meta.url === `file://${process.argv[1]}`) {
-  try {
-    main();
-  } catch (error) {
-    console.error('\n❌ ERROR: Failed to generate secrets\n');
-    console.error(error.message);
-    console.error('\nPlease ensure Node.js crypto module is available.');
-    process.exit(1);
-  }
+// Note: Always run main() since this is a utility script
+try {
+  main();
+} catch (error) {
+  console.error('\n❌ ERROR: Failed to generate secrets\n');
+  console.error(error.message);
+  console.error('\nPlease ensure Node.js crypto module is available.');
+  process.exit(1);
 }
 
 export { generateSecret, generateHexSecret };
