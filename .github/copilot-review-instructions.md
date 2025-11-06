@@ -188,7 +188,8 @@ export async function POST(req: Request) {
     // 5. Return standardized response
     return Response.json({ success: true, data: result });
   } catch (error) {
-    console.error('Audit creation error:', error);
+    // Use proper logging in production (e.g., logger.error, Sentry, etc.)
+    // Example: logger.error('Audit creation error:', error);
     return Response.json({ 
       success: false, 
       error: 'Failed to create audit' 
