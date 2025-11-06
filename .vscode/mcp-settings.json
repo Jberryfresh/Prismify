@@ -1,0 +1,15 @@
+{
+  "supermemory-mcp": {
+    "command": "npx",
+    "args": ["-y", "mcp-remote", "https://api.supermemory.ai/mcp"],
+    "env": {},
+    "headers": {
+      "Authorization": "Bearer sm_tUSNQbByr2JWJsubHoWZYy_mvZRZntwmUmEPthzCfajsMvZvYJlDCkdvUhrexxuGpxkeHpSstMSGatmncNKtpxc"
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "description": "Multi-step reasoning chains for complex decisions"
+    }
+  }
+}

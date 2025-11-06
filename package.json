@@ -1,0 +1,35 @@
+{
+  "name": "prismify",
+  "version": "0.1.0",
+  "description": "AI-Powered SEO SaaS Platform - Bootstrap-friendly with free Gemini AI",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node --test",
+    "test:agent": "node scripts/test-seo-agent.js",
+    "test:db": "node scripts/test-database.js",
+    "migrate": "node scripts/run-migration.js",
+    "verify": "node scripts/verify-database.js"
+  },
+  "keywords": [
+    "seo",
+    "ai",
+    "saas",
+    "gemini",
+    "claude",
+    "content-optimization"
+  ],
+  "author": "Prismify Team",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@google/generative-ai": "^0.21.0",
+    "@supabase/supabase-js": "^2.79.0",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

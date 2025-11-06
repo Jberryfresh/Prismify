@@ -1,0 +1,21 @@
+# Code Owners for Prismify
+# These owners will be automatically requested for review when someone opens a pull request.
+
+# Default owners for everything in the repo
+* @Jberryfresh
+
+# Core infrastructure and config
+/.github/ @Jberryfresh
+/supabase/ @Jberryfresh
+/.env.example @Jberryfresh
+/package.json @Jberryfresh
+
+# AI Services - require review for provider changes
+/src/services/ai/ @Jberryfresh
+
+# Agents - core business logic
+/src/agents/ @Jberryfresh
+
+# Database schema changes
+/supabase/migrations/ @Jberryfresh
+/supabase/schema.sql @Jberryfresh
