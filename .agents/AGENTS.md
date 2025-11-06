@@ -12,6 +12,147 @@ You are an expert AI development assistant helping build **Prismify**, an AI-pow
 
 ---
 
+## 📝 PROJECT_TODO.md - Your Task Management System
+
+### Overview
+
+The **`.agents/PROJECT_TODO.md`** file is your **central source of truth** for all development tasks, priorities, and progress tracking. Before starting ANY work, consult this file. After completing ANY task, update it immediately.
+
+### How to Use PROJECT_TODO.md
+
+**1. Before Starting Work:**
+- ✅ Read through the file to understand current priorities
+- ✅ Find an unclaimed task marked `[ ]` (not started)
+- ✅ Verify the task matches the current phase and priority level
+- ✅ Check for dependencies or blockers listed
+
+**2. When Claiming a Task:**
+- ✅ Change checkbox from `[ ]` to `[🔲]` (in-progress marker)
+- ✅ Add `Branch: phase-X.Y-short-description` below the task
+- ✅ Add `StartedBy: <your-identifier>` and `StartedAt: YYYY-MM-DD HH:MM UTC`
+- ✅ Note any questions or clarifications needed
+
+**Example:**
+```markdown
+- [🔲] 2.1.1 Implement JWT auth with refresh tokens (P0)
+  Branch: phase-2.1-jwt-auth
+  StartedBy: AI-Agent-Claude
+  StartedAt: 2025-11-05 14:30 UTC
+  - Acceptance: POST /auth/login returns access and refresh tokens...
+```
+
+**3. While Working:**
+- ✅ Commit with format: `[PHASE-X.Y] Short description - P{0|1|2|3}`
+- ✅ Keep TODO updated if scope changes or blockers discovered
+- ✅ Add notes about decisions made or issues encountered
+
+**4. When Task Complete:**
+- ✅ Change checkbox from `[🔲]` to `[✓]`
+- ✅ Add completion metadata:
+  - `CompletedBy: <your-identifier>`
+  - `CompletedAt: YYYY-MM-DD HH:MM UTC`
+  - `PR: <link-to-pull-request>`
+  - `TestsRun: <which tests executed and results>`
+  - `Notes: <what changed, decisions made, gotchas>`
+
+**Example:**
+```markdown
+- [✓] 2.1.1 Implement JWT auth with refresh tokens (P0)
+  Branch: phase-2.1-jwt-auth
+  StartedBy: AI-Agent-Claude
+  StartedAt: 2025-11-05 14:30 UTC
+  CompletedBy: AI-Agent-Claude
+  CompletedAt: 2025-11-05 18:45 UTC
+  PR: https://github.com/Jberryfresh/Prismify/pull/5
+  TestsRun: npm run test:auth (all 12 tests passed)
+  Notes: Used bcrypt for hashing, JWT expiry set to 15min access / 7day refresh
+  - Acceptance: POST /auth/login returns access and refresh tokens... ✅
+```
+
+### Priority Levels (P0-P3)
+
+- **P0 (Critical)**: Must be done before dependent work; security, data integrity, breaking bugs
+- **P1 (High)**: Core functionality, MVP requirements, authentication, API endpoints
+- **P2 (Medium)**: UX improvements, analytics, secondary features
+- **P3 (Low)**: Nice-to-have, polish, long-term optimizations
+
+**Always work on highest priority (P0) first, unless blocked.**
+
+### Phase Organization
+
+Tasks are organized by **Phase** → **Increment**:
+- Phase 1: Foundation & Local Dev
+- Phase 2: Core Backend & AI Services
+- Phase 3: Specialized Agents & Features
+- Phase 4: Frontend & UX
+- Phase 5: QA, Security & Performance
+- Phase 6: Launch & Operations
+
+**Within each phase, tasks are numbered (e.g., 1.1, 1.2, 2.1, 2.2).**
+
+### Definition of Done (DoD)
+
+A task is only complete when:
+1. ✅ Code pushed to feature branch and PR opened
+2. ✅ CI passes (lint, tests, build)
+3. ✅ Tests written and passing (or documented why N/A)
+4. ✅ Documentation updated (README, inline comments, API docs)
+5. ✅ Acceptance criteria met and verified
+6. ✅ PR linked in TODO with completion notes
+
+### Branch Naming Convention
+
+Use format: `phase-{X}.{Y}-{short-description}`
+
+**Examples:**
+- `phase-1.2-jwt-secrets`
+- `phase-2.1-auth-endpoints`
+- `phase-3.1-seo-meta-generation`
+
+### Commit Message Format
+
+Use format: `[PHASE-X.Y] Short description - P{0|1|2|3}`
+
+**Examples:**
+- `[PHASE-2.1] Implement JWT auth with refresh tokens - P0`
+- `[PHASE-1.3] Add Docker Compose for local DB - P0`
+- `[PHASE-4.1] Build landing page hero section - P1`
+
+### When to Add New Tasks
+
+If you discover work not in the TODO:
+1. ✅ Add to appropriate phase/section
+2. ✅ Assign priority (P0-P3)
+3. ✅ Write clear acceptance criteria
+4. ✅ List affected files/areas
+5. ✅ Note dependencies
+6. ✅ Mark as `[ ]` (not started)
+7. ✅ Notify in PR or commit notes
+
+### Common Pitfalls to Avoid
+
+❌ Starting work without marking task `[🔲]`  
+❌ Completing work without marking task `[✓]`  
+❌ Missing completion metadata (PR link, tests, notes)  
+❌ Working on low-priority tasks when P0 tasks exist  
+❌ Not updating TODO when scope changes  
+❌ Marking incomplete work as done  
+❌ Skipping tests or documentation  
+
+### Integration with This Document (AGENTS.md)
+
+- **AGENTS.md** = Strategic guidance, principles, architecture
+- **PROJECT_TODO.md** = Tactical task list, progress tracking, execution
+
+Use both together:
+1. Read AGENTS.md for context and principles
+2. Check PROJECT_TODO.md for specific tasks
+3. Execute work following both guidelines
+4. Update PROJECT_TODO.md with progress
+5. Refer back to AGENTS.md for decisions
+
+---
+
 ## 📋 Core Principles
 
 ### 1. **Business-First Mindset**
