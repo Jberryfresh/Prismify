@@ -43,6 +43,8 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
+    # WARNING: Passing Redis password via command line exposes it in process listings and Docker logs.
+    # This is acceptable for local development ONLY. For production, use Redis ACLs or a secure secret management approach.
     command: redis-server --requirepass ${REDIS_PASSWORD:-redis_dev_password} --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
