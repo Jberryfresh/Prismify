@@ -130,11 +130,20 @@ const config = {
 
   // Email
   email: {
+    // Resend (recommended for Prismify - 3,000 emails/month free)
+    resend: {
+      apiKey: process.env.RESEND_API_KEY,
+      fromEmail: process.env.EMAIL_FROM || 'noreply@prismify.com',
+      fromName: process.env.EMAIL_FROM_NAME || 'Prismify',
+    },
+    // SendGrid (legacy/alternative provider)
     sendgrid: {
       apiKey: process.env.SENDGRID_API_KEY,
-      fromEmail: process.env.SENDGRID_FROM_EMAIL || 'noreply@digitaltide.com',
-      fromName: process.env.SENDGRID_FROM_NAME || 'DigitalTide',
+      fromEmail: process.env.SENDGRID_FROM_EMAIL || 'noreply@prismify.com',
+      fromName: process.env.SENDGRID_FROM_NAME || 'Prismify',
     },
+    // Preferred provider (resend or sendgrid)
+    provider: process.env.EMAIL_PROVIDER || 'resend',
   },
 
   // Storage
