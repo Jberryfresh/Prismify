@@ -9,6 +9,7 @@ import pg from 'pg';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 
 // Load environment variables from docker/.env
 const envPath = join(process.cwd(), 'docker', '.env');
@@ -162,9 +163,20 @@ const SAMPLE_META_TAGS = [
     }
 ];
 
-// Hash password (simple bcrypt-style for testing)
+/**
+ * Hash password using bcrypt for secure password storage
+ * 
+ * ⚠️ WARNING: THIS IS FOR LOCAL TEST DATA ONLY ⚠️
+ * This function is used ONLY for seeding local development databases
+ * with test accounts. The actual password hashing in production should
+ * be handled by your authentication system (e.g., Supabase Auth).
+ * 
+ * NEVER use this pattern in production code - use your auth provider's
+ * built-in password hashing instead.
+ */
 function hashPassword(password) {
-    return crypto.createHash('sha256').update(password + 'salt').digest('hex');
+    // Use bcrypt with 10 rounds for proper password hashing
+    return bcrypt.hashSync(password, 10);
 }
 
 async function seedDatabase() {
