@@ -226,6 +226,8 @@ async function seedDatabase() {
         console.log('🔑 Creating API keys...');
         for (const user of userIds) {
             const apiKey = `prm_${user.tier}_${crypto.randomBytes(16).toString('hex')}`;
+            // NOTE: For test data only. Do NOT use SHA-256 for API key hashing in production.
+            // Use a key derivation function like bcrypt, PBKDF2, or Argon2 for production API keys.
             const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
             const keyPrefix = apiKey.substring(0, 12);
             
