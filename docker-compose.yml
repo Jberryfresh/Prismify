@@ -26,6 +26,8 @@ services:
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Scripts in ./docker/postgres/init-scripts are run ONCE on first container creation (when the data volume is empty).
+      # Use this ONLY for initial schema setup or seed data. For ongoing migrations, use: npm run migrate:local
       - ./docker/postgres/init-scripts:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-prismify}"]
