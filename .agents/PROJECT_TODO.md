@@ -84,18 +84,14 @@ Notes: Completed all environment and secrets configuration. Created comprehensiv
   - CompletedAt: 2025-11-05
   - Notes: Created comprehensive .env.example with 80+ environment variables organized by category. Includes MVP requirements section, security notes, and quick start guide. Verified .gitignore already excludes all .env variants.
   - Tests: Verified .gitignore patterns cover .env* files
-- [🔲] 1.2.2 Add helper script to generate secure JWT secrets
-  - Criticality: P1
-  - Files: `scripts/generate-secrets.js` or README snippet
-  - Acceptance: Running the script prints and does not persist secrets
 - [✓] 1.2.2 Add helper script to generate secure JWT secrets
   - Criticality: P1
   - Files: `scripts/generate-secrets.js`
   - Acceptance: Running the script prints and does not persist secrets
   - CompletedBy: GitHub Copilot
-  - CompletedAt: 2025-11-05
-  - Notes: Created comprehensive script that generates cryptographically secure secrets using crypto.randomBytes(). Provides both base64 (512-bit) and hex (256-bit) formats. Includes security warnings, usage instructions, and production checklist. Script outputs to stdout only (never persists). Tested successfully with exit code 0.
-  - Tests: Executed `node scripts/generate-secrets.js` - ran successfully
+  - CompletedAt: 2025-11-06
+  - Notes: Created comprehensive script that generates cryptographically secure secrets using crypto.randomBytes(). Provides both base64 (512-bit) and hex (256-bit) formats. Includes security warnings, usage instructions, and production checklist. Script outputs to stdout only (never persists). Fixed Windows compatibility issue where import.meta.url check prevented execution.
+  - Tests: Executed `node scripts/generate-secrets.js` - successfully outputs formatted secrets to terminal. Verified different secrets on each run. Confirmed no files created (stdout only).
 
 ## 1.3 Local Dev & DB (P0)
 - [ ] 1.3.1 Docker Compose (Postgres, Redis, optional MinIO) (P0)
