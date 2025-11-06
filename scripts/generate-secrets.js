@@ -24,12 +24,6 @@
  */
 
 import crypto from 'crypto';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 // Configuration
 const SECRET_LENGTH = 64; // 64 bytes = 512 bits (very secure)
 const ENCODING = 'base64'; // base64 is URL-safe and compact
