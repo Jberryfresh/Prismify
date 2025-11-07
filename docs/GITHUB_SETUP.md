@@ -21,12 +21,14 @@ The following repository configuration files have been created:
 Due to GitHub OAuth scope limitations, you'll need to push the code manually:
 
 ### Option 1: Using GitHub Desktop (Easiest)
+
 1. Open GitHub Desktop
 2. Add the local repository: File → Add Local Repository → Browse to `C:\Prismify`
 3. Review changes and commit
 4. Push to origin
 
 ### Option 2: Using Personal Access Token
+
 1. Go to https://github.com/settings/tokens/new
 2. Generate a token with these scopes:
    - ✅ `repo` (full control)
@@ -39,6 +41,7 @@ Due to GitHub OAuth scope limitations, you'll need to push the code manually:
    ```
 
 ### Option 3: Using SSH
+
 1. Set up SSH keys: https://docs.github.com/en/authentication/connecting-to-github-with-ssh
 2. Change remote URL:
    ```powershell
@@ -51,6 +54,7 @@ Due to GitHub OAuth scope limitations, you'll need to push the code manually:
 After pushing, configure these settings at https://github.com/Jberryfresh/Prismify/settings:
 
 ### Branch Protection (Recommended)
+
 1. Go to Settings → Branches
 2. Add rule for `main` branch:
    - ✅ Require pull request reviews before merging
@@ -59,6 +63,7 @@ After pushing, configure these settings at https://github.com/Jberryfresh/Prismi
    - ✅ Do not allow bypassing the above settings
 
 ### Secrets (Required for CI)
+
 1. Go to Settings → Secrets and variables → Actions
 2. Add these secrets:
    - `SUPABASE_URL`
@@ -67,6 +72,7 @@ After pushing, configure these settings at https://github.com/Jberryfresh/Prismi
    - (Optional) `ANTHROPIC_API_KEY`
 
 ### General Settings
+
 1. Settings → General:
    - ✅ Enable Issues
    - ✅ Enable Discussions (for community)
@@ -75,6 +81,7 @@ After pushing, configure these settings at https://github.com/Jberryfresh/Prismi
    - Add topics: `ai`, `seo`, `nodejs`, `supabase`, `gemini`, `claude`, `automation`
 
 ### Collaborators
+
 1. Settings → Collaborators
 2. Add team members as needed
 
@@ -100,6 +107,7 @@ All of this happens automatically on every PR and push to `main`.
 ## 📝 Using the Repository
 
 ### Creating a Feature Branch
+
 ```powershell
 git checkout -b phase-1.2-jwt-auth
 # Make changes
@@ -110,7 +118,9 @@ git push origin phase-1.2-jwt-auth
 ```
 
 ### Keeping TODO Updated
+
 Every task should:
+
 1. Mark `[🔲]` when starting
 2. Add `Branch: phase-X.Y-description`
 3. Mark `[✓]` when complete
@@ -119,6 +129,7 @@ Every task should:
 ## 🚀 You're All Set!
 
 Your GitHub repository is configured with industry best practices:
+
 - Standardized PR process
 - Automated CI/CD
 - Clear contribution guidelines

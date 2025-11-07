@@ -10,6 +10,11 @@
     "test": "node --test",
     "test:agent": "node scripts/test-seo-agent.js",
     "test:db": "node scripts/test-database.js",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write \"**/*.{js,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{js,json,md,yml,yaml}\"",
+    "prepare": "husky install",
     "migrate": "node scripts/run-migration.js",
     "migrate:local": "node scripts/run-migration-local.js",
     "seed": "node scripts/seed-data.js",
@@ -38,5 +43,21 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.1",
+    "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.6.2"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }

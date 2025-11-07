@@ -23,13 +23,17 @@ class SEOAgent extends Agent {
     try {
       // Initialize unified AI service (supports both Gemini and Claude)
       await unifiedAIService.initialize();
-      
+
       // Verify at least one AI provider is available
       if (!unifiedAIService.isAvailable()) {
-        throw new Error('No AI service providers are available. Please configure GEMINI_API_KEY or ANTHROPIC_API_KEY in your .env file');
+        throw new Error(
+          'No AI service providers are available. Please configure GEMINI_API_KEY or ANTHROPIC_API_KEY in your .env file'
+        );
       }
 
-      this.logger.info(`[${this.name}] SEO Agent initialized successfully with ${unifiedAIService.preferredProvider} AI`);
+      this.logger.info(
+        `[${this.name}] SEO Agent initialized successfully with ${unifiedAIService.preferredProvider} AI`
+      );
       return true;
     } catch (error) {
       this.logger.error(`[${this.name}] Initialization failed:`, error);
@@ -351,7 +355,7 @@ Provide keywords in JSON format:
   analyzeContentSEO(content, keywords) {
     const wordCount = content ? content.split(/\s+/).length : 0;
     const charCount = content ? content.length : 0;
-    const paragraphCount = content ? content.split(/\n\n/).filter(p => p.trim()).length : 0;
+    const paragraphCount = content ? content.split(/\n\n/).filter((p) => p.trim()).length : 0;
     const hasHeadings = content ? /#{1,6}\s/.test(content) || /<h[1-6]>/i.test(content) : false;
     const hasLists = content ? /[-*]\s|\d+\.\s|<[ou]l>/i.test(content) : false;
 
@@ -389,7 +393,7 @@ Provide keywords in JSON format:
     const contentLower = content ? content.toLowerCase() : '';
     const wordCount = content ? content.split(/\s+/).length : 0;
 
-    const usage = keywords.map(keyword => {
+    const usage = keywords.map((keyword) => {
       const keywordLower = keyword.toLowerCase();
       const matches = (contentLower.match(new RegExp(keywordLower, 'g')) || []).length;
       const density = wordCount > 0 ? matches / wordCount : 0;
@@ -413,7 +417,7 @@ Provide keywords in JSON format:
    * Analyze readability
    */
   analyzeReadability(content) {
-    const sentences = content ? content.split(/[.!?]+/).filter(s => s.trim()) : [];
+    const sentences = content ? content.split(/[.!?]+/).filter((s) => s.trim()) : [];
     const words = content ? content.split(/\s+/) : [];
     const avgWordsPerSentence = sentences.length > 0 ? words.length / sentences.length : 0;
 
@@ -429,9 +433,15 @@ Provide keywords in JSON format:
    */
   calculateTitleScore(length, hasNumbers, hasPowerWords) {
     let score = 0.5;
-    if (length >= 30 && length <= 70) score += 0.3;
-    if (hasNumbers) score += 0.1;
-    if (hasPowerWords) score += 0.1;
+    if (length >= 30 && length <= 70) {
+      score += 0.3;
+    }
+    if (hasNumbers) {
+      score += 0.1;
+    }
+    if (hasPowerWords) {
+      score += 0.1;
+    }
     return Math.min(score, 1);
   }
 
@@ -440,9 +450,15 @@ Provide keywords in JSON format:
    */
   calculateContentScore(wordCount, hasHeadings, hasLists) {
     let score = 0.4;
-    if (wordCount >= 300) score += 0.3;
-    if (hasHeadings) score += 0.15;
-    if (hasLists) score += 0.15;
+    if (wordCount >= 300) {
+      score += 0.3;
+    }
+    if (hasHeadings) {
+      score += 0.15;
+    }
+    if (hasLists) {
+      score += 0.15;
+    }
     return Math.min(score, 1);
   }
 
@@ -486,11 +502,21 @@ Provide keywords in JSON format:
    * Get grade
    */
   getGrade(score) {
-    if (score >= 0.9) return 'A+';
-    if (score >= 0.8) return 'A';
-    if (score >= 0.7) return 'B';
-    if (score >= 0.6) return 'C';
-    if (score >= 0.5) return 'D';
+    if (score >= 0.9) {
+      return 'A+';
+    }
+    if (score >= 0.8) {
+      return 'A';
+    }
+    if (score >= 0.7) {
+      return 'B';
+    }
+    if (score >= 0.6) {
+      return 'C';
+    }
+    if (score >= 0.5) {
+      return 'D';
+    }
     return 'F';
   }
 
@@ -601,10 +627,10 @@ Provide keywords in JSON format:
     const words = content
       .toLowerCase()
       .split(/\W+/)
-      .filter(word => word.length > 4 && !stopWords.has(word));
+      .filter((word) => word.length > 4 && !stopWords.has(word));
 
     const frequency = {};
-    words.forEach(word => {
+    words.forEach((word) => {
       frequency[word] = (frequency[word] || 0) + 1;
     });
 

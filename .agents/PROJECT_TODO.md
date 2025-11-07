@@ -21,6 +21,7 @@
 ---
 
 ## Legend: Criticality / Priority
+
 - **🔴 P0-CRITICAL**: Must complete before next phase. Platform cannot function without these. Security, data integrity, breaking issues.
 - **🟡 P1-HIGH**: Needed for MVP or core functionality. Essential for revenue generation (auth, subscriptions, core SEO features).
 - **🟢 P2-MEDIUM**: Important for UX, developer experience, and customer satisfaction. Complete before lower priorities.
@@ -31,7 +32,9 @@
 ---
 
 ## Definition of Done (DoD)
+
 For a task to be considered done it must have:
+
 1. Code pushed to a feature branch and PR opened.
 2. CI passes (lint, tests, build). If unit tests are missing, add at least 1-2 tests for new logic.
 3. Automated checks (security, dependency) not failing or documented exceptions.
@@ -42,6 +45,7 @@ For a task to be considered done it must have:
 ---
 
 ## Branch & PR Rules (copy of recommended policy)
+
 - Branch name: `phase-{X}.{Y}-{short-description}`
 - One increment per branch. Small, focused commits.
 - PR title: `[PHASE-X.Y] <Short description> - P{0|1|2|3}`
@@ -50,11 +54,13 @@ For a task to be considered done it must have:
 ---
 
 # Phase 1 — Foundation & Local Development (PHASE 1)
+
 **Goal**: Make the repository, local dev, and core infra runnable for all contributors.  
 **Timeline**: Weeks 1-2 of MVP development  
 **Success Criteria**: Any developer can clone repo and run full stack locally within 30 minutes
 
 ## 1.1 Repo Hygiene & Onboarding (P0)
+
 - [✓] 1.1.1 Create contribution and developer onboarding docs (docs/DEV_ONBOARDING.md)
   - Acceptance: New developer can run `npm install` and `npm run dev` following docs.
   - Files: `README.md`, `docs/DEV_ONBOARDING.md` (update if exists)
@@ -78,6 +84,7 @@ For a task to be considered done it must have:
   - Notes: Created `.github/PULL_REQUEST_TEMPLATE.md` with structured PR format including phase tracking, acceptance criteria, test instructions, and checklist. Branch protection rules documented in GITHUB_SETUP.md.
 
 ## 1.2 Environment & Secrets (P0) ✓
+
 Branch: phase-1.2-environment-secrets
 StartedBy: GitHub Copilot
 StartedAt: 2025-11-05
@@ -92,7 +99,7 @@ Notes: Completed all environment and secrets configuration. Created comprehensiv
   - CompletedBy: GitHub Copilot
   - CompletedAt: 2025-11-05
   - Notes: Created comprehensive .env.example with 80+ environment variables organized by category. Includes MVP requirements section, security notes, and quick start guide. Verified .gitignore already excludes all .env variants.
-  - Tests: Verified .gitignore patterns cover .env* files
+  - Tests: Verified .gitignore patterns cover .env\* files
 - [✓] 1.2.2 Add helper script to generate secure JWT secrets
   - Criticality: P1
   - Files: `scripts/generate-secrets.js`
@@ -103,6 +110,7 @@ Notes: Completed all environment and secrets configuration. Created comprehensiv
   - Tests: Executed `node scripts/generate-secrets.js` - successfully outputs formatted secrets to terminal. Verified different secrets on each run. Confirmed no files created (stdout only).
 
 ## 1.3 Local Dev & DB (🔴 P0-CRITICAL)
+
 Branch: phase-1.3-local-dev-db
 StartedBy: GitHub Copilot
 StartedAt: 2025-11-06
@@ -129,29 +137,52 @@ StartedAt: 2025-11-06
   - Notes: Created comprehensive seed script that populates database with realistic test data for all subscription tiers. Generated 3 users (one per tier), 3 API keys with proper hashing, 5 SEO projects distributed across users, 8 SEO analyses with realistic scores, 10 meta tag configurations, 1113 API usage records spanning 7 days, and 3 subscription history records. All data uses proper schema (key_hash/key_prefix for API keys, website_url for projects, results as jsonb for analyses). Test credentials: starter/professional/agency@prismify.test with password Test123!
   - Tests: Verified with `npm run seed` - all data created successfully. Confirmed data distribution: Starter (2 projects, 2 analyses), Professional (2 projects, 5 analyses), Agency (1 project, 1 analysis). Database fully populated for development and testing.
 
-## 1.4 Continuous Integration (🟡 P1-HIGH)
-- [ ] 1.4.1 GitHub Actions: Lint, test, build (🟡 P1-HIGH)
+## 1.4 Continuous Integration (🟡 P1-HIGH) ✓
+
+Branch: phase-1.4-ci-cd
+StartedBy: GitHub Copilot
+StartedAt: 2025-11-06
+CompletedBy: GitHub Copilot
+CompletedAt: 2025-11-06
+Commits: 499d8f9, 54ed6c0, fe42106
+Notes: Completed all CI/CD tasks. GitHub Actions workflow with Node.js matrix testing, ESLint + Prettier + Husky hooks, and Dependabot security scanning all operational.
+
+- [✓] 1.4.1 GitHub Actions: Lint, test, build (🟡 P1-HIGH)
   - Acceptance: `ci.yml` runs on PRs with lint, unit tests, and build validation; fails on errors
   - Files: `.github/workflows/ci.yml`
   - Notes: Include Node.js matrix testing (18.x, 20.x). Run SEO agent tests.
-- [ ] 1.4.2 Add code formatting hooks (prettier/eslint) (🟡 P1-HIGH)
+  - CompletedBy: GitHub Copilot
+  - CompletedAt: 2025-11-06 16:30 UTC
+  - Commit: 499d8f9
+  - Notes: Enhanced CI workflow with Node.js matrix (18.x, 20.x), PostgreSQL + Redis services, SEO agent tests, security scanning, and comprehensive checks. Placeholder lint/format scripts added for 1.4.2.
+- [✓] 1.4.2 Add code formatting hooks (prettier/eslint) (🟡 P1-HIGH)
   - Acceptance: `pre-commit` runs autoformat; consistent code style enforced
   - Files: `.prettierrc`, `.eslintrc.json`, `.husky/*`
   - Notes: Configure ESLint for Node.js + async/await patterns. Prettier for consistent formatting.
-- [ ] 1.4.3 Automated security scanning (🟢 P2-MEDIUM)
+  - CompletedBy: GitHub Copilot
+  - CompletedAt: 2025-11-06 17:00 UTC
+  - Commit: 54ed6c0
+  - Notes: Installed ESLint 9 with eslint.config.js, Prettier, Husky, and lint-staged. Pre-commit hooks run automatically. 0 errors, 14 minor warnings.
+- [✓] 1.4.3 Automated security scanning (🟢 P2-MEDIUM)
   - Acceptance: Dependabot alerts enabled; npm audit runs in CI
   - Files: `.github/dependabot.yml`
   - Notes: Weekly dependency updates, security vulnerability scanning.
+  - CompletedBy: GitHub Copilot
+  - CompletedAt: 2025-11-06 17:10 UTC
+  - Commit: fe42106
+  - Notes: Dependabot configured for weekly updates. npm audit and secret scanning already implemented in CI from task 1.4.1.
 
 ---
 
 # Phase 2 — Core Backend & Subscription System (PHASE 2)
+
 **Goal**: Build authentication, subscription management, and core API infrastructure for SaaS business model.  
 **Timeline**: Weeks 3-4 of MVP development  
 **Success Criteria**: Users can signup, subscribe to plans, and access tier-appropriate features  
 **Revenue Impact**: 🔴 CRITICAL - Without this phase, no revenue generation possible
 
 ## 2.1 Authentication & Authorization (🔴 P0-CRITICAL)
+
 - [ ] 2.1.1 Supabase Auth integration (🔴 P0-CRITICAL)
   - Acceptance: Email/password signup and login working; JWT tokens issued; sessions managed
   - Files: `src/services/auth/*`, `src/middleware/auth.js`, `src/config/supabase.js`
@@ -167,6 +198,7 @@ StartedAt: 2025-11-06
   - Notes: Check subscription_tier from users table. Enforce quotas per tier.
 
 ## 2.2 Subscription & Billing (🔴 P0-CRITICAL)
+
 - [ ] 2.2.1 Stripe subscription integration (🔴 P0-CRITICAL)
   - Acceptance: Create Stripe customers, subscribe to plans ($49/$149/$499), webhook handlers work
   - Files: `src/services/stripe/*`, `src/routes/billing.js`, `src/routes/webhooks/stripe.js`
@@ -186,6 +218,7 @@ StartedAt: 2025-11-06
   - Notes: Use Stripe Customer Portal for self-service billing management.
 
 ## 2.3 Core API Endpoints (🟡 P1-HIGH)
+
 - [ ] 2.3.1 User profile endpoints (🟡 P1-HIGH)
   - Acceptance: GET /api/user (self), PATCH /api/user (update profile), DELETE /api/user (account deletion)
   - Files: `src/routes/users.js`, `src/controllers/users.js`
@@ -205,6 +238,7 @@ StartedAt: 2025-11-06
   - Notes: Use jsPDF for PDF generation. Include charts via recharts.
 
 ## 2.4 AI Service Integration (🔴 P0-CRITICAL)
+
 - [ ] 2.4.1 Unified AI Service with fallbacks (🔴 P0-CRITICAL)
   - Acceptance: `unifiedAIService.executeWithFallback` works with Gemini (primary), OpenAI (fallback)
   - Files: `src/services/ai/unifiedAIService.js`, `src/services/ai/geminiService.js`, `src/services/ai/claudeService.js`
@@ -222,12 +256,14 @@ StartedAt: 2025-11-06
 ---
 
 # Phase 3 — SEO Analysis Engine (PHASE 3)
+
 **Goal**: Implement 7-component SEO scoring system and core optimization features.  
 **Timeline**: Weeks 5-6 of MVP development  
 **Success Criteria**: Users can run comprehensive SEO audits and receive actionable recommendations  
 **Revenue Impact**: 🔴 CRITICAL - Core product value proposition
 
 ## 3.1 SEO Agent Core (🔴 P0-CRITICAL)
+
 - [ ] 3.1.1 Extract and refactor SEOAgent.js (🔴 P0-CRITICAL)
   - Acceptance: SEOAgent.js (3,083 lines) wrapped as standalone module; all tests pass
   - Files: `src/agents/specialized/SEOAgent.js`, `scripts/test-seo-agent.js`
@@ -246,6 +282,7 @@ StartedAt: 2025-11-06
   - Notes: Support historical tracking for progress charts. Include timestamp and score changes.
 
 ## 3.2 Keyword Research (🟡 P1-HIGH)
+
 - [ ] 3.2.1 Keyword research with competition analysis (🟡 P1-HIGH)
   - Acceptance: Return keywords with search volume, competition level, difficulty score, opportunity score
   - Files: `src/agents/specialized/KeywordAgent.js`, `src/services/keywordResearch.js`
@@ -260,6 +297,7 @@ StartedAt: 2025-11-06
   - Notes: Post-MVP feature. Requires competitor URL input.
 
 ## 3.3 Internal Linking Strategy (🟡 P1-HIGH)
+
 - [ ] 3.3.1 Site structure analysis (🟡 P1-HIGH)
   - Acceptance: Map internal link structure; identify orphan pages; calculate relevance scores
   - Files: `src/agents/specialized/LinkingAgent.js`, `src/services/linkAnalysis.js`
@@ -270,6 +308,7 @@ StartedAt: 2025-11-06
   - Notes: Use AI to generate contextually relevant anchor text.
 
 ## 3.4 Schema Markup & Technical SEO (🟡 P1-HIGH)
+
 - [ ] 3.4.1 Schema markup generator (🟡 P1-HIGH)
   - Acceptance: Generate JSON-LD for Article, FAQ, Organization, Breadcrumb, Product schemas
   - Files: `src/agents/specialized/SchemaAgent.js`, `src/services/schemaGenerator.js`
@@ -284,6 +323,7 @@ StartedAt: 2025-11-06
   - Notes: Integrate with Google PageSpeed Insights API.
 
 ## 3.5 Rate Limiting & Usage Tracking (🔴 P0-CRITICAL)
+
 - [ ] 3.5.1 Per-user quota enforcement (🔴 P0-CRITICAL)
   - Acceptance: Block API requests when user exceeds monthly quota; return 429 with reset time
   - Files: `src/middleware/quotaCheck.js`, `src/services/usageTracker.js`
@@ -296,12 +336,14 @@ StartedAt: 2025-11-06
 ---
 
 # Phase 4 — Frontend Dashboard & User Experience (PHASE 4)
+
 **Goal**: Build Next.js dashboard for users to run audits, view results, and manage subscriptions.  
 **Timeline**: Weeks 7-8 of MVP development  
 **Success Criteria**: Users can complete full workflow from signup to viewing audit results  
 **Revenue Impact**: 🟡 HIGH - Essential for user activation and retention
 
 ## 4.1 Landing Page & Marketing Site (🟡 P1-HIGH)
+
 - [ ] 4.1.1 Landing page with pricing tiers (🟡 P1-HIGH)
   - Acceptance: Hero section, feature showcase, pricing table ($49/$149/$499), CTA buttons work
   - Files: `apps/web/app/page.tsx`, `apps/web/components/landing/*`
@@ -315,6 +357,7 @@ StartedAt: 2025-11-06
   - Files: `apps/web/app/faq/page.tsx`, `apps/web/app/docs/*`
 
 ## 4.2 Authentication UI (🔴 P0-CRITICAL)
+
 - [ ] 4.2.1 Login and signup forms (🔴 P0-CRITICAL)
   - Acceptance: Email/password login works; OAuth buttons (Google, GitHub) functional
   - Files: `apps/web/app/(auth)/login/page.tsx`, `apps/web/app/(auth)/register/page.tsx`
@@ -328,6 +371,7 @@ StartedAt: 2025-11-06
   - Notes: Interactive tutorial using react-joyride or similar. Goal: 60%+ complete first audit within 24h.
 
 ## 4.3 Dashboard & Core Features (🔴 P0-CRITICAL)
+
 - [ ] 4.3.1 Dashboard layout and navigation (🔴 P0-CRITICAL)
   - Acceptance: Sidebar navigation, top bar with user menu, responsive layout
   - Files: `apps/web/app/(dashboard)/layout.tsx`, `apps/web/components/navigation/*`
@@ -346,6 +390,7 @@ StartedAt: 2025-11-06
   - Notes: Sortable table. Visual indicators for opportunity (green=good, red=hard).
 
 ## 4.4 Subscription Management UI (🔴 P0-CRITICAL)
+
 - [ ] 4.4.1 Subscription settings page (🔴 P0-CRITICAL)
   - Acceptance: Current plan displayed; upgrade/downgrade/cancel buttons; usage quotas shown
   - Files: `apps/web/app/(dashboard)/settings/subscription/page.tsx`
@@ -356,6 +401,7 @@ StartedAt: 2025-11-06
   - Notes: Use Stripe Customer Portal iframe or API.
 
 ## 4.5 Reports & Exports (🟢 P2-MEDIUM)
+
 - [ ] 4.5.1 PDF report generation (🟢 P2-MEDIUM)
   - Acceptance: Generate branded PDF with audit results, charts, recommendations
   - Files: `apps/web/app/(dashboard)/reports/page.tsx`, API endpoint
@@ -366,6 +412,7 @@ StartedAt: 2025-11-06
   - Notes: Simple CSV download. No complex formatting needed.
 
 ## 4.6 Admin Dashboard (🟢 P2-MEDIUM)
+
 - [ ] 4.6.1 Admin user management (🟢 P2-MEDIUM)
   - Acceptance: View all users; search/filter; view subscription status; impersonate user
   - Files: `apps/web/app/(admin)/users/page.tsx`
@@ -378,12 +425,14 @@ StartedAt: 2025-11-06
 ---
 
 # Phase 5 — Testing, Security, & Performance (PHASE 5)
+
 **Goal**: Ensure platform is secure, performant, and production-ready.  
 **Timeline**: Weeks 9-10 of MVP development  
 **Success Criteria**: All critical security issues resolved, load tested for 100 concurrent users  
 **Revenue Impact**: 🔴 CRITICAL - Security breach or downtime destroys trust and revenue
 
 ## 5.1 Security Hardening (🔴 P0-CRITICAL)
+
 - [ ] 5.1.1 Security audit checklist (🔴 P0-CRITICAL)
   - Acceptance: OWASP Top 10 vulnerabilities addressed; no critical Snyk/npm audit issues
   - Files: `docs/SECURITY_AUDIT.md`, security fixes across codebase
@@ -402,6 +451,7 @@ StartedAt: 2025-11-06
   - Notes: 100 req/min per IP for public endpoints. 60 req/min per user for authenticated.
 
 ## 5.2 Performance Optimization (🟡 P1-HIGH)
+
 - [ ] 5.2.1 API load testing (🟡 P1-HIGH)
   - Acceptance: API handles 100 concurrent users with <500ms p95 latency; no errors at 100 req/s
   - Files: `tests/load/api-load.test.js`
@@ -420,6 +470,7 @@ StartedAt: 2025-11-06
   - Notes: Code splitting, lazy loading, image optimization (Next/Image).
 
 ## 5.3 Testing & Quality Assurance (🟡 P1-HIGH)
+
 - [ ] 5.3.1 Unit test coverage (🟡 P1-HIGH)
   - Acceptance: >70% code coverage for business logic; all services have unit tests
   - Files: `tests/unit/*`
@@ -438,6 +489,7 @@ StartedAt: 2025-11-06
   - Notes: Use existing test-seo-agent.js script. Ensure 100% pass rate before launch.
 
 ## 5.4 Monitoring & Observability (🟡 P1-HIGH)
+
 - [ ] 5.4.1 Error tracking setup (🟡 P1-HIGH)
   - Acceptance: Sentry configured; errors logged with context; alerts for critical errors
   - Files: Sentry configuration, error handling middleware
@@ -454,12 +506,14 @@ StartedAt: 2025-11-06
 ---
 
 # Phase 6 — Deployment & Launch (PHASE 6)
+
 **Goal**: Deploy to production, launch to public, and establish operations processes.  
 **Timeline**: Weeks 11-12 of MVP development  
 **Success Criteria**: Platform live, first 10 paying customers acquired, monitoring operational  
 **Revenue Impact**: 🔴 CRITICAL - No deployment = No revenue
 
 ## 6.1 Infrastructure & Deployment (🔴 P0-CRITICAL)
+
 - [ ] 6.1.1 Production environment setup (🔴 P0-CRITICAL)
   - Acceptance: Vercel production deployment works; Supabase production instance configured; domain connected
   - Files: Vercel project, Supabase project, DNS configuration
@@ -478,6 +532,7 @@ StartedAt: 2025-11-06
   - Notes: Supabase has automatic backups. Document restore procedure.
 
 ## 6.2 Launch Preparation (🔴 P0-CRITICAL)
+
 - [ ] 6.2.1 Beta testing with 20-30 users (🔴 P0-CRITICAL)
   - Acceptance: Recruit beta testers; collect feedback; fix critical bugs; achieve >80% satisfaction
   - Files: `docs/BETA_TESTING.md`, feedback tracking
@@ -496,6 +551,7 @@ StartedAt: 2025-11-06
   - Notes: Searchable documentation. Include troubleshooting guides.
 
 ## 6.3 Operations & Monitoring (🟡 P1-HIGH)
+
 - [ ] 6.3.1 24/7 monitoring and alerting (🟡 P1-HIGH)
   - Acceptance: Uptime monitoring (UptimeRobot/Pingdom); alerts via Slack/PagerDuty; response plan documented
   - Files: Monitoring configuration, `docs/INCIDENT_RESPONSE.md`
@@ -510,6 +566,7 @@ StartedAt: 2025-11-06
   - Notes: Track: signups, conversions, churn, MRR, usage patterns.
 
 ## 6.4 Growth & Marketing (🟡 P1-HIGH)
+
 - [ ] 6.4.1 Launch announcement campaign (🟡 P1-HIGH)
   - Acceptance: Post on: Product Hunt, Hacker News, IndieHackers, Reddit (r/SEO, r/SaaS); Twitter thread
   - Files: Marketing copy, social media posts
@@ -530,6 +587,7 @@ StartedAt: 2025-11-06
 ---
 
 # Phase 7 — Post-Launch Growth Features (PHASE 7)
+
 **Goal**: Implement features that increase retention, reduce churn, and drive expansion revenue. **BUILD AUTONOMOUS AGENT TEAM**.  
 **Timeline**: Months 2-6 post-launch  
 **Success Criteria**: Retention >80%, feature adoption >60%, expansion revenue >25% of total  
@@ -537,9 +595,10 @@ StartedAt: 2025-11-06
 **⚠️ CRITICAL**: This phase introduces the **Multi-Agent Architecture**. See `.agents/AGENT_TEAM_ARCHITECTURE.md` for full specifications.
 
 ## 7.0 Multi-Agent System Foundation (🔴 P0-CRITICAL)
+
 - [ ] 7.0.1 Agent communication framework (🔴 P0-CRITICAL)
   - Acceptance: Agents can send/receive structured messages via Redis pub/sub or message queue
-  - Files: `src/agents/base/AgentCommunication.js`, `src/services/messaging/*`
+  - Files: `src/agents/base/AgentCommunication.js`, `src/services/messaging/                                                                                  *`
   - Notes: JSON message format with sender, recipient, type, data, timestamp. Enable agent collaboration.
 - [ ] 7.0.2 Agent registry and discovery (🔴 P0-CRITICAL)
   - Acceptance: Central registry tracks all active agents; agents can discover and invoke each other
@@ -551,6 +610,7 @@ StartedAt: 2025-11-06
   - Notes: Real-time agent health monitoring. CEO can pause/resume agents.
 
 ## 7.1 COO Agent (Command & Control) (🟡 P1-HIGH)
+
 - [ ] 7.1.1 Build COO Agent core (🟡 P1-HIGH)
   - Acceptance: COO Agent can answer CEO queries, aggregate reports from other agents, provide daily briefing
   - Files: `src/agents/executive/COOAgent.js`, prompts for GPT-4/Claude
@@ -565,6 +625,7 @@ StartedAt: 2025-11-06
   - Notes: Example: CEO says "Reduce churn" → COO assigns Customer Success Agent to run retention campaign.
 
 ## 7.2 Sales Agent (Customer Acquisition) (🟡 P1-HIGH)
+
 - [ ] 7.2.1 Lead generation and qualification (🟡 P1-HIGH)
   - Acceptance: Sales Agent scrapes LinkedIn, Crunchbase, BuiltWith for leads; scores them 0-100
   - Files: `src/agents/revenue/SalesAgent.js`, `src/services/leadGeneration/*`
@@ -579,6 +640,7 @@ StartedAt: 2025-11-06
   - Notes: Target: 30% demo → trial conversion. Track which messaging works best.
 
 ## 7.3 Analytics Agent (Business Intelligence) (🟡 P1-HIGH)
+
 - [ ] 7.3.1 Build Analytics Agent (🟡 P1-HIGH)
   - Acceptance: Agent queries database for MRR, churn, CAC, LTV; generates daily/weekly reports
   - Files: `src/agents/operations/AnalyticsAgent.js`, `src/services/analytics/*`
@@ -593,6 +655,7 @@ StartedAt: 2025-11-06
   - Notes: Track variants, measure statistical significance, recommend winners.
 
 ## 7.1 Customer Success Features (🟡 P1-HIGH)
+
 - [ ] 7.1.1 Build Customer Success Agent (🟡 P1-HIGH)
   - Acceptance: Agent monitors user engagement; sends re-engagement emails; identifies upsell opportunities
   - Files: `src/agents/customer/CustomerSuccessAgent.js`, `src/services/engagement/*`
@@ -611,6 +674,7 @@ StartedAt: 2025-11-06
   - Notes: Track feature adoption rates. A/B test messaging.
 
 ## 7.2 Advanced SEO Features (🟢 P2-MEDIUM)
+
 - [ ] 7.2.1 Backlink analysis (🟢 P2-MEDIUM)
   - Acceptance: Show backlink profile; detect toxic backlinks; competitor backlink gap
   - Files: `src/services/backlinkAnalysis.js`
@@ -629,6 +693,7 @@ StartedAt: 2025-11-06
   - Notes: Use Flesch Reading Ease, Gunning Fog Index.
 
 ## 7.3 White-Label & Agency Features (🟢 P2-MEDIUM)
+
 - [ ] 7.3.1 White-label reports (🟢 P2-MEDIUM)
   - Acceptance: Remove Prismify branding; add agency logo/colors; custom report templates
   - Files: `src/services/reportGenerator.js`, white-label settings
@@ -643,6 +708,7 @@ StartedAt: 2025-11-06
   - Notes: Professional: 3 seats. Agency: 10 seats. Upsell additional seats.
 
 ## 7.4 Integrations & API (🟢 P2-MEDIUM)
+
 - [ ] 7.4.1 WordPress plugin (🟢 P2-MEDIUM)
   - Acceptance: One-click SEO audit from WordPress admin; recommendations in dashboard
   - Files: WordPress plugin codebase, WordPress.org submission
@@ -663,12 +729,14 @@ StartedAt: 2025-11-06
 ---
 
 # Phase 8 — Optimization & Scale (PHASE 8)
+
 **Goal**: Optimize operations, reduce costs, improve margins, prepare for scale. **EXPAND AGENT TEAM**.  
 **Timeline**: Months 6-12 post-launch  
 **Success Criteria**: >85% gross margin, <5% monthly churn, break-even achieved  
 **Revenue Impact**: 🟡 HIGH - Profitability and sustainable growth
 
 ## 8.0 Additional Agents (🟢 P2-MEDIUM)
+
 - [ ] 8.0.1 Build Marketing Agent (🟢 P2-MEDIUM)
   - Acceptance: Agent writes blog posts, schedules social media, manages ad campaigns
   - Files: `src/agents/revenue/MarketingAgent.js`, `src/services/contentGeneration/*`
@@ -687,6 +755,7 @@ StartedAt: 2025-11-06
   - Notes: Auto-diagnose common issues. Alert COO on critical incidents. Cost optimization suggestions.
 
 ## 8.1 Cost Optimization (🟡 P1-HIGH)
+
 - [ ] 8.1.1 AI cost reduction (🟡 P1-HIGH)
   - Acceptance: Increase cache hit rate to >80%; optimize prompts to reduce tokens; batch requests
   - Files: AI service optimization
@@ -701,6 +770,7 @@ StartedAt: 2025-11-06
   - Notes: Review Vercel, Supabase, Redis usage monthly. Negotiate enterprise pricing.
 
 ## 8.2 Revenue Optimization (🟡 P1-HIGH)
+
 - [ ] 8.2.1 Pricing experiments (🟡 P1-HIGH)
   - Acceptance: Test different price points; measure conversion rate impact; optimize pricing tiers
   - Files: Pricing page variations
@@ -715,6 +785,7 @@ StartedAt: 2025-11-06
   - Notes: Add-ons: Extra audits ($10 for 10), extra keywords ($5 for 50), priority support ($99/mo).
 
 ## 8.3 Retention & Churn Reduction (🟡 P1-HIGH)
+
 - [ ] 8.3.1 Churn prediction model (🟡 P1-HIGH)
   - Acceptance: ML model predicts churn risk; alert for at-risk customers; proactive outreach
   - Files: `src/services/churnPrediction.js`
@@ -729,6 +800,7 @@ StartedAt: 2025-11-06
   - Notes: Target NPS >50. Follow up with detractors.
 
 ## 8.4 Operational Excellence (🟢 P2-MEDIUM)
+
 - [ ] 8.4.1 Automated customer support (🟢 P2-MEDIUM)
   - Acceptance: AI chatbot handles 50% of support tickets; knowledge base comprehensive
   - Files: Chatbot integration, knowledge base
@@ -745,6 +817,7 @@ StartedAt: 2025-11-06
 ---
 
 ## Agent Etiquette & Notes
+
 - Use clear, concise task notes. Always include `PR` with link, commit summary, and tests run.
 - If you change schema or public API, update `docs/CHANGELOG.md` and `docs/API.md`.
 - Keep incremental tasks small; large feature work should be broken into multiple increments.
@@ -755,6 +828,7 @@ StartedAt: 2025-11-06
 ---
 
 ## Quick index: file ownership hints
+
 - `src/agents/*` → SEO Agent and future specialized agents
 - `src/services/ai/*` → Gemini/Claude/unified AI router and caching
 - `src/services/stripe/*` → Subscription management and billing
@@ -769,28 +843,33 @@ StartedAt: 2025-11-06
 ## SaaS Business Context (CRITICAL READING)
 
 ### Target Customers
+
 1. **Freelancers & Small Businesses** (Starter $49/mo): Solo operators, bloggers, small e-commerce
 2. **Agencies** (Professional $149/mo): 10-50 employee agencies managing multiple clients
 3. **Large Agencies & Enterprises** (Agency $499/mo): 50+ employees, need white-label, API access
 
 ### Revenue Model
+
 - **MRR Growth Target**: $7.5K (Month 12) → $37K (Year 2) → $372K (Year 5)
 - **Unit Economics**: LTV:CAC ratio 6:1, 85-90% gross margin, <5% churn at maturity
 - **Expansion Revenue**: 25%+ from upgrades (Starter → Professional → Agency)
 
 ### Competitive Advantages
+
 1. **AI-First**: 80% automation vs. 20% for competitors
 2. **Speed**: <60s per audit vs. hours for manual analysis
 3. **Pricing**: 10x cheaper than traditional SEO agencies ($500-$5,000/mo)
 4. **All-in-One**: Complete SEO stack (audit, keywords, meta tags, schema, sitemap)
 
 ### Success Metrics
+
 - **Activation**: 60%+ of signups run first audit within 24h
 - **Retention**: 80%+ monthly retention (5-7% churn)
 - **NPS**: >50 (world-class product-market fit)
 - **Feature Adoption**: 60%+ use 5+ features regularly
 
 ### Critical Path to Revenue
+
 1. **Phase 1-2**: Foundation (no revenue) - 4 weeks
 2. **Phase 3**: SEO engine (core value) - 2 weeks
 3. **Phase 4**: Dashboard (user activation) - 2 weeks
@@ -803,6 +882,7 @@ StartedAt: 2025-11-06
 ---
 
 ## Final instruction to agents
+
 Before starting any task, update this file to mark it `[🔲]` and add your `Branch:` line. When complete, mark `[✓]` and include `CompletedBy`, `CompletedAt`, and `PR:`. This is the canonical project task tracker for agent work.
 
 **Remember**: This is a BUSINESS, not just a technical project. Every decision impacts revenue, customer satisfaction, and market success. Think like a founder building a profitable SaaS company, not just an engineer writing code.
@@ -810,6 +890,7 @@ Before starting any task, update this file to mark it `[🔲]` and add your `Bra
 **Priority Discipline**: 🔴 P0-CRITICAL tasks are blocking. Complete them before ANY lower priority work. Customer revenue depends on it.
 
 **Reference Documents**:
+
 - `.agents/PROJECT_GOALS.md` - Business strategy, target metrics, market analysis
 - `.agents/IDEAS.md` - Complete feature list with priorities
 - `.agents/FUTURE_INNOVATIONS.md` - Long-term roadmap (Year 2-5)
@@ -819,7 +900,7 @@ Before starting any task, update this file to mark it `[🔲]` and add your `Bra
 
 ---
 
-*Last Updated: November 6, 2025*  
-*Status: Phase 1.3 (Local Dev & DB) - In Progress*  
-*Next Milestone: Complete MVP Phases 1-6 within 12 weeks*  
-*Business Goal: Launch to first paying customers, validate product-market fit*
+_Last Updated: November 6, 2025_  
+_Status: Phase 1.3 (Local Dev & DB) - In Progress_  
+_Next Milestone: Complete MVP Phases 1-6 within 12 weeks_  
+_Business Goal: Launch to first paying customers, validate product-market fit_

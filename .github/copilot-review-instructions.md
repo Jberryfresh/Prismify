@@ -5,6 +5,7 @@
 **Goal**: Maintain high code quality, security, and performance standards while moving fast. Reviews should be constructive, educational, and focused on catching issues before they reach production.
 
 **Review Principles:**
+
 - **Security First**: Flag any potential security vulnerabilities immediately
 - **Performance Matters**: Identify performance bottlenecks and inefficient patterns
 - **User Experience**: Ensure changes enhance or maintain UX quality
@@ -18,6 +19,7 @@
 ### Security Review (P1-CRITICAL)
 
 **Authentication & Authorization:**
+
 - [ ] All API routes verify user authentication via Supabase
 - [ ] Row Level Security (RLS) policies properly restrict data access
 - [ ] No hardcoded API keys or secrets in code
@@ -25,6 +27,7 @@
 - [ ] Session management follows best practices (httpOnly cookies)
 
 **Input Validation:**
+
 - [ ] All user inputs validated with Zod schemas or equivalent
 - [ ] SQL injection prevention (use parameterized queries only)
 - [ ] XSS prevention (sanitize all user-generated content)
@@ -32,6 +35,7 @@
 - [ ] URL/domain validation for audit submissions
 
 **Rate Limiting:**
+
 - [ ] Rate limits enforced on expensive operations (audits, keyword research)
 - [ ] Subscription tier limits validated server-side, not just client-side
 - [ ] DDoS protection via Cloudflare or similar
@@ -39,6 +43,7 @@
 - [ ] API abuse prevention mechanisms in place
 
 **Data Protection:**
+
 - [ ] Sensitive data encrypted at rest and in transit (HTTPS enforced)
 - [ ] No PII logged to console or error tracking
 - [ ] User data deletion properly implemented (GDPR compliance)
@@ -48,6 +53,7 @@
 ### Performance Review (P1-CRITICAL)
 
 **Response Times:**
+
 - [ ] API endpoints respond within 500ms for 95th percentile
 - [ ] Audit processing completes within 60 seconds
 - [ ] Database queries optimized with proper indexes
@@ -55,6 +61,7 @@
 - [ ] Large datasets paginated (max 100 results per request)
 
 **Caching Strategy:**
+
 - [ ] AI responses cached in Redis to minimize API costs
 - [ ] Static assets cached with appropriate headers
 - [ ] Supabase queries cached where appropriate
@@ -62,6 +69,7 @@
 - [ ] Redis TTLs set appropriately (not too short or long)
 
 **Frontend Performance:**
+
 - [ ] Images optimized (Next.js Image component used)
 - [ ] Code splitting implemented for large components
 - [ ] Lazy loading for below-the-fold content
@@ -69,6 +77,7 @@
 - [ ] Server components used by default, client components only when needed
 
 **AI API Cost Control:**
+
 - [ ] Gemini API calls rate-limited per user/tier
 - [ ] Responses cached to avoid duplicate API calls
 - [ ] Fallback to cheaper models for non-critical tasks
@@ -78,6 +87,7 @@
 ### Business Logic Review (P2-HIGH)
 
 **Subscription Enforcement:**
+
 - [ ] Starter plan limited to 10 audits/month
 - [ ] Professional plan limited to 50 audits/month
 - [ ] Agency plan truly unlimited (no artificial caps)
@@ -86,6 +96,7 @@
 - [ ] Grace period implemented for expired subscriptions
 
 **Stripe Integration:**
+
 - [ ] Webhook events properly handled (subscription.created, updated, deleted)
 - [ ] Failed payment retry logic implemented
 - [ ] Proration handled correctly for mid-cycle upgrades/downgrades
@@ -94,6 +105,7 @@
 - [ ] Test mode transactions never mixed with production
 
 **Data Integrity:**
+
 - [ ] Audit scores consistently calculated (0-100 scale)
 - [ ] Historical data preserved when audits are deleted
 - [ ] Relationships maintained (cascading deletes where appropriate)
@@ -103,6 +115,7 @@
 ### Code Quality Review (P2-HIGH)
 
 **TypeScript Standards:**
+
 - [ ] No `any` types used (use `unknown` or proper types)
 - [ ] All functions have return type annotations
 - [ ] Interfaces defined for all API request/response shapes
@@ -110,6 +123,7 @@
 - [ ] Strict mode enabled and no type errors
 
 **React/Next.js Best Practices:**
+
 - [ ] Server components used by default (performance benefit)
 - [ ] `'use client'` directive only on truly interactive components
 - [ ] No useState/useEffect in server components
@@ -118,6 +132,7 @@
 - [ ] Metadata properly set for SEO (ironic, but important!)
 
 **Error Handling:**
+
 - [ ] All async operations wrapped in try-catch
 - [ ] User-friendly error messages displayed
 - [ ] Errors logged to Sentry or similar for debugging
@@ -125,6 +140,7 @@
 - [ ] Proper HTTP status codes returned (400, 401, 403, 404, 500)
 
 **Testing:**
+
 - [ ] Unit tests cover core business logic
 - [ ] API routes have integration tests
 - [ ] Critical user flows have E2E tests (Playwright)
@@ -136,6 +152,7 @@
 ## 🚨 Auto-Reject Criteria (Must Fix Before Merge)
 
 **Immediate rejection if PR contains:**
+
 1. **Hardcoded secrets** (API keys, passwords, tokens)
 2. **Committed `.env` files** with real credentials
 3. **SQL injection vulnerabilities** (string concatenation in queries)
@@ -154,6 +171,7 @@
 ### API Routes (`app/api/**/*.ts`)
 
 **Check for:**
+
 - Authentication middleware applied
 - Request validation with Zod schemas
 - Proper error handling and status codes
@@ -162,12 +180,15 @@
 - Response follows standardized format
 
 **Example good pattern:**
+
 ```typescript
 export async function POST(req: Request) {
   try {
     // 1. Authenticate
     const supabase = createRouteHandlerClient({ cookies });
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -189,10 +210,13 @@ export async function POST(req: Request) {
     return Response.json({ success: true, data: result });
   } catch (error) {
     console.error('Audit creation error:', error);
-    return Response.json({ 
-      success: false, 
-      error: 'Failed to create audit' 
-    }, { status: 500 });
+    return Response.json(
+      {
+        success: false,
+        error: 'Failed to create audit',
+      },
+      { status: 500 }
+    );
   }
 }
 ```
@@ -200,6 +224,7 @@ export async function POST(req: Request) {
 ### React Components (`components/**/*.tsx`)
 
 **Check for:**
+
 - Proper TypeScript prop types defined
 - Accessibility attributes (aria-labels, alt text)
 - Loading and error states handled
@@ -208,6 +233,7 @@ export async function POST(req: Request) {
 - Responsive design (mobile-first approach)
 
 **Red flags:**
+
 - Inline styles (use Tailwind classes)
 - Direct DOM manipulation (use React patterns)
 - Fetch calls in useEffect (use React Query or server components)
@@ -217,6 +243,7 @@ export async function POST(req: Request) {
 ### Database Migrations (`supabase/migrations/**/*.sql`)
 
 **Check for:**
+
 - Proper indexes on foreign keys and frequently queried columns
 - Row Level Security (RLS) policies defined for all tables
 - NOT NULL constraints where appropriate
@@ -225,6 +252,7 @@ export async function POST(req: Request) {
 - Migration is reversible (DOWN migration exists)
 
 **Example good migration:**
+
 ```sql
 -- Create table
 CREATE TABLE audits (
@@ -263,6 +291,7 @@ CREATE TRIGGER set_updated_at
 ### SEO Agent Logic (`lib/seo-agent/**/*.ts`)
 
 **Check for:**
+
 - Input sanitization for URLs and content
 - Timeout handling for long-running operations
 - Graceful degradation if AI API unavailable
@@ -271,6 +300,7 @@ CREATE TRIGGER set_updated_at
 - Clear documentation of algorithm logic
 
 **Performance concerns:**
+
 - Avoid crawling entire site synchronously (limit depth/pages)
 - Timeout long-running HTTP requests (5-10 second max)
 - Don't block on external API calls (use async patterns)
@@ -281,6 +311,7 @@ CREATE TRIGGER set_updated_at
 ## 📋 Review Comments Template
 
 ### For Security Issues:
+
 ```
 🚨 SECURITY: [Brief description]
 
@@ -291,6 +322,7 @@ CREATE TRIGGER set_updated_at
 ```
 
 ### For Performance Issues:
+
 ```
 ⚡ PERFORMANCE: [Brief description]
 
@@ -301,6 +333,7 @@ CREATE TRIGGER set_updated_at
 ```
 
 ### For Business Logic Issues:
+
 ```
 💰 BUSINESS: [Brief description]
 
@@ -310,6 +343,7 @@ CREATE TRIGGER set_updated_at
 ```
 
 ### For Code Quality Issues:
+
 ```
 🔧 CODE QUALITY: [Brief description]
 
@@ -319,6 +353,7 @@ CREATE TRIGGER set_updated_at
 ```
 
 ### For Positive Feedback:
+
 ```
 ✅ NICE: [What was done well]
 
@@ -331,24 +366,28 @@ CREATE TRIGGER set_updated_at
 ## 🎯 Priority-Based Review Focus
 
 ### P1-CRITICAL Changes (Security, Auth, Payments)
+
 **Review depth**: Line-by-line scrutiny  
 **Required approvals**: 2+ reviewers  
 **Testing required**: Integration + E2E tests must pass  
 **Deployment**: Requires staging validation before production
 
 ### P2-HIGH Changes (Core Features, Database Schema)
+
 **Review depth**: Thorough review of logic and edge cases  
 **Required approvals**: 1+ experienced reviewer  
 **Testing required**: Unit tests + relevant integration tests  
 **Deployment**: Standard CI/CD pipeline
 
 ### P3-MEDIUM Changes (UI Components, Minor Features)
+
 **Review depth**: Focus on user experience and maintainability  
 **Required approvals**: 1 reviewer  
 **Testing required**: Basic smoke tests  
 **Deployment**: Can deploy to production after CI passes
 
 ### P4-LOW Changes (Documentation, CSS Tweaks)
+
 **Review depth**: Quick scan for obvious issues  
 **Required approvals**: Optional (can be self-merged after CI)  
 **Testing required**: Visual inspection  
@@ -385,22 +424,28 @@ CREATE TRIGGER set_updated_at
    - Self-review the diff in GitHub before submitting
 
 2. **PR Description Template:**
+
    ```markdown
    ## What Changed
+
    [Brief description of changes]
 
    ## Why
+
    [Business or technical justification]
 
    ## Testing
+
    - [ ] Unit tests added/updated
    - [ ] Manually tested in dev environment
    - [ ] Edge cases considered
 
    ## Screenshots (if UI change)
+
    [Before/After images]
 
    ## Deployment Notes
+
    [Any special considerations for deployment]
    ```
 
@@ -434,20 +479,24 @@ Before merging any PR to main branch:
 **For reviewers and authors to reference:**
 
 **Security:**
+
 - OWASP Top 10: https://owasp.org/www-project-top-ten/
 - Next.js Security: https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy
 - Supabase RLS Guide: https://supabase.com/docs/guides/auth/row-level-security
 
 **Performance:**
+
 - Next.js Performance: https://nextjs.org/docs/app/building-your-application/optimizing
 - Web Vitals: https://web.dev/vitals/
 - React Query Best Practices: https://tanstack.com/query/latest/docs/react/guides/performance
 
 **TypeScript:**
+
 - TypeScript Best Practices: https://www.typescriptlang.org/docs/handbook/declaration-files/do-s-and-don-ts.html
 - Zod Validation: https://zod.dev/
 
 **Testing:**
+
 - Vitest Guide: https://vitest.dev/guide/
 - Playwright E2E: https://playwright.dev/docs/intro
 
@@ -456,6 +505,7 @@ Before merging any PR to main branch:
 ## 💡 Review Tips
 
 **For effective reviews:**
+
 1. **Be specific**: "Use `const` instead of `let` on line 42" not "Fix variable declarations"
 2. **Explain why**: Don't just say what's wrong, explain the impact
 3. **Suggest alternatives**: Provide concrete examples of better patterns
@@ -465,6 +515,7 @@ Before merging any PR to main branch:
 7. **Consider context**: Understand business priorities and deadlines
 
 **For authors receiving feedback:**
+
 1. **Don't take it personally**: Reviews improve code quality for everyone
 2. **Ask for clarification**: If feedback is unclear, ask for examples
 3. **Explain your reasoning**: If you disagree, explain why with data

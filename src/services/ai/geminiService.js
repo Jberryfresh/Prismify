@@ -282,9 +282,9 @@ Return only the headlines, one per line, numbered 1-${count}.`;
     // Parse headlines from response
     const headlines = result.text
       .split('\n')
-      .filter(line => line.trim())
-      .map(line => line.replace(/^\d+\.\s*/, '').trim())
-      .filter(line => line.length > 0);
+      .filter((line) => line.trim())
+      .map((line) => line.replace(/^\d+\.\s*/, '').trim())
+      .filter((line) => line.length > 0);
 
     return headlines.slice(0, count);
   }

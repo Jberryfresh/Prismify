@@ -22,7 +22,7 @@ Prismify is an intelligent SEO optimization platform that leverages AI agents to
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - Supabase account
 - Google AI Studio API key (free)
 - Optional: Anthropic API key (paid)
@@ -163,10 +163,10 @@ Prismify uses a **dual-provider architecture**:
 
 - **Runtime**: Node.js 18+ (ESM modules)
 - **Database**: Supabase (PostgreSQL)
-- **AI Providers**: 
+- **AI Providers**:
   - Google Gemini (`@google/generative-ai`)
   - Anthropic Claude (`@anthropic-ai/sdk`)
-- **Key Packages**: 
+- **Key Packages**:
   - `@supabase/supabase-js`
   - `dotenv`
 
@@ -186,7 +186,7 @@ See [`.agents/PROJECT_TODO.md`](./.agents/PROJECT_TODO.md) for detailed roadmap.
 **Phase 3**: Specialized agents & features  
 **Phase 4**: Frontend & UX  
 **Phase 5**: QA, security & performance  
-**Phase 6**: Launch & operations  
+**Phase 6**: Launch & operations
 
 ## 📄 License
 
@@ -209,4 +209,4 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 **Built with ❤️ by [Jberryfresh](https://github.com/Jberryfresh)**
 
-*Prismify - Where AI meets SEO excellence*
+_Prismify - Where AI meets SEO excellence_

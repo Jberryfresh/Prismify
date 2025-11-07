@@ -128,10 +128,14 @@ class UnifiedAIService {
 
     // Try each provider in order
     for (const providerName of this.fallbackOrder) {
-      if (!this.providerStatus[providerName]) continue;
+      if (!this.providerStatus[providerName]) {
+        continue;
+      }
 
       const provider = this.providers[providerName];
-      if (!provider || !provider.isAvailable()) continue;
+      if (!provider || !provider.isAvailable()) {
+        continue;
+      }
 
       try {
         const result = await provider[method](params);
@@ -154,7 +158,7 @@ class UnifiedAIService {
 
     // All providers failed
     this.stats.failedRequests++;
-    const errorMsg = errors.map(e => `${e.provider}: ${e.error}`).join('; ');
+    const errorMsg = errors.map((e) => `${e.provider}: ${e.error}`).join('; ');
     throw new Error(`All AI providers failed: ${errorMsg}`);
   }
 
@@ -226,7 +230,7 @@ class UnifiedAIService {
    * Check if any provider is available
    */
   isAvailable() {
-    return Object.values(this.providerStatus).some(status => status === true);
+    return Object.values(this.providerStatus).some((status) => status === true);
   }
 
   /**
