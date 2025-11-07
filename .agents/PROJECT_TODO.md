@@ -214,24 +214,9 @@ StartedAt: 2025-11-07
   - Files: `src/middleware/subscription.js`, `src/routes/subscriptions.js`, `tests/subscription.test.js`, `docs/SUBSCRIPTION_RBAC.md`
   - CompletedBy: GitHub Copilot
   - CompletedAt: 2025-11-07
+  - Commits: 1d318b3, 899f5f8
   - Notes: Complete RBAC system with 3 middleware functions (requireTier, checkQuota, requireFeature) and 3 helper functions (getQuotaInfo, hasFeatureAccess, getUserFeatures). Enforces 3-tier subscription model: Starter (10 audits/month), Professional (50 audits/month), Agency (unlimited). Feature flags support 11 distinct features. Subscription routes expose 5 REST endpoints for quota/feature queries. Comprehensive 600+ line documentation with examples. Integration tests cover tier hierarchy, quota enforcement, and feature access.
-  - Tests: Created `tests/subscription.test.js` with 13 test cases. Added `test:subscription` script to package.json. All code passes ESLint with 0 new warnings.
-  - Notes: Use Supabase Auth (not custom JWT). Supports email/password + OAuth (Google, GitHub).
-  - Branch: phase-2.1-authentication
-  - CompletedBy: GitHub Copilot
-  - CompletedAt: 2025-11-07 18:45 UTC
-  - PR: TBD
-  - Notes: Created complete Supabase Auth integration with authService, middleware (requireAuth, optionalAuth, requireAdmin, requireOwnership, rateLimitByUser), and comprehensive tests. Includes README with full documentation and examples. Ready for testing with `npm run test:auth`.
-- [🔲] 2.1.2 Password reset and email verification (🟡 P1-HIGH)
-  - Acceptance: Password reset flow sends email with magic link; email verification required for new accounts
-  - Files: `src/services/email/*`, `src/routes/auth.js`
-  - Notes: Use Supabase email templates. Configure SMTP settings in Supabase dashboard.
-  - Branch: phase-2.1-authentication
-  - StartedAt: 2025-11-07 19:00 UTC
-- [ ] 2.1.3 Role-based access control (RBAC) (🟡 P1-HIGH)
-  - Acceptance: Middleware enforces subscription tiers (starter/professional/agency); admin role supported
-  - Files: `src/middleware/rbac.js`, `src/middleware/subscription.js`
-  - Notes: Check subscription_tier from users table. Enforce quotas per tier.
+  - Tests: Created `tests/subscription.test.js` with 13 test cases. Added `test:subscription` script to package.json. All code passes ESLint with 0 new warnings. Tests require Supabase cloud setup to run (will be configured in Phase 2.2).
 
 ## 2.2 Subscription & Billing (🔴 P0-CRITICAL)
 
