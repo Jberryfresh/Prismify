@@ -255,15 +255,6 @@ export async function processGracePeriods() {
           });
           summary.day3Emails++;
         }
-        // Day 7 warning (after grace period, but good practice)
-        else if (daysSinceFailure === GRACE_PERIOD.DUNNING_SCHEDULE.DAY_7) {
-          await sendDunningEmail(user.email, user.full_name, {
-            day: 7,
-            gracePeriodDays: GRACE_PERIOD.DAYS,
-            accountSuspended: true,
-          });
-          summary.day7Emails++;
-        }
       } catch (err) {
         summary.errors.push({
           userId: user.id,

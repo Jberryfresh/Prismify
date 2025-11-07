@@ -37,6 +37,21 @@ const TIER_HIERARCHY = {
 };
 
 /**
+ * Get appropriate error message based on subscription status
+ * @param {string} status - Subscription status
+ * @returns {string} User-friendly error message
+ */
+function getSubscriptionErrorMessage(status) {
+  if (status === subscriptionManager.SUBSCRIPTION_STATUS.PAST_DUE) {
+    return 'Your subscription payment failed. Please update your payment method to continue using the service.';
+  }
+  if (status === subscriptionManager.SUBSCRIPTION_STATUS.UNPAID) {
+    return 'Your subscription has been suspended due to payment failure. Please update your payment method to restore access.';
+  }
+  return 'Your subscription is not active. Please update your payment method or resubscribe.';
+}
+
+/**
  * Monthly quotas per subscription tier
  */
 export const TIER_QUOTAS = {
@@ -184,12 +199,7 @@ export function requireTier(minimumTier) {
 
       // Block access if subscription inactive and not in grace period
       if (!subscriptionStatus.hasAccess) {
-        const message =
-          subscriptionStatus.status === subscriptionManager.SUBSCRIPTION_STATUS.PAST_DUE
-            ? 'Your subscription payment failed. Please update your payment method to continue using the service.'
-            : subscriptionStatus.status === subscriptionManager.SUBSCRIPTION_STATUS.UNPAID
-              ? 'Your subscription has been suspended due to payment failure. Please update your payment method to restore access.'
-              : 'Your subscription is not active. Please update your payment method or resubscribe.';
+        const message = getSubscriptionErrorMessage(subscriptionStatus.status);
 
         return res.status(403).json({
           success: false,

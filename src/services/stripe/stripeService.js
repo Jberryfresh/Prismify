@@ -13,6 +13,7 @@
 
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { TIER_QUOTAS } from '../../config/tiers.js';
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -26,34 +27,13 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SER
  * Price IDs for subscription tiers
  * These should be set in .env file after creating products in Stripe Dashboard
  */
-const PRICE_IDS = {
+export const PRICE_IDS = {
   starter_monthly: process.env.STRIPE_PRICE_STARTER_MONTHLY,
   starter_annual: process.env.STRIPE_PRICE_STARTER_ANNUAL,
   professional_monthly: process.env.STRIPE_PRICE_PROFESSIONAL_MONTHLY,
   professional_annual: process.env.STRIPE_PRICE_PROFESSIONAL_ANNUAL,
   agency_monthly: process.env.STRIPE_PRICE_AGENCY_MONTHLY,
   agency_annual: process.env.STRIPE_PRICE_AGENCY_ANNUAL,
-};
-
-/**
- * Subscription tier quotas
- */
-const TIER_QUOTAS = {
-  starter: {
-    audits_per_month: 10,
-    keywords_per_month: 50,
-    max_projects: 3,
-  },
-  professional: {
-    audits_per_month: 50,
-    keywords_per_month: 500,
-    max_projects: 20,
-  },
-  agency: {
-    audits_per_month: -1, // unlimited
-    keywords_per_month: -1, // unlimited
-    max_projects: -1, // unlimited
-  },
 };
 
 /**
@@ -516,6 +496,7 @@ export async function getInvoice(invoiceId) {
 
     return {
       id: invoice.id,
+      customerId: invoice.customer,
       number: invoice.number,
       status: invoice.status,
       amount: invoice.amount_due,

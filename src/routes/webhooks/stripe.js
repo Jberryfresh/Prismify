@@ -31,6 +31,13 @@ export async function handleStripeWebhook(req, res) {
   let event;
 
   try {
+    // Validate webhook secret is configured
+    if (!endpointSecret) {
+      throw new Error(
+        'STRIPE_WEBHOOK_SECRET is not configured. Please set this environment variable.'
+      );
+    }
+
     // Verify webhook signature
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {

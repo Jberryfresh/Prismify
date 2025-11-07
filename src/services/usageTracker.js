@@ -13,34 +13,9 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { TIER_QUOTAS } from '../config/tiers.js';
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-
-/**
- * Tier quotas (matches stripeService.js)
- */
-const TIER_QUOTAS = {
-  free: {
-    audits_per_month: 1,
-    keywords_per_month: 10,
-    max_projects: 1,
-  },
-  starter: {
-    audits_per_month: 10,
-    keywords_per_month: 50,
-    max_projects: 3,
-  },
-  professional: {
-    audits_per_month: 50,
-    keywords_per_month: 500,
-    max_projects: 20,
-  },
-  agency: {
-    audits_per_month: -1, // unlimited
-    keywords_per_month: -1, // unlimited
-    max_projects: -1, // unlimited
-  },
-};
 
 /**
  * Get user's current subscription tier and quotas

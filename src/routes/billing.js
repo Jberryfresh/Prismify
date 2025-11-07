@@ -12,7 +12,7 @@
  */
 
 import express from 'express';
-import stripeService from '../services/stripe/stripeService.js';
+import stripeService, { PRICE_IDS } from '../services/stripe/stripeService.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -34,6 +34,18 @@ router.post('/checkout', requireAuth, async (req, res) => {
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Missing required fields: priceId, successUrl, cancelUrl',
+        },
+      });
+    }
+
+    // Validate price ID is from approved list
+    const validPriceIds = Object.values(PRICE_IDS);
+    if (!validPriceIds.includes(priceId)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_PRICE_ID',
+          message: 'Invalid price ID. Please select a valid subscription plan.',
         },
       });
     }
@@ -88,8 +100,8 @@ router.post('/portal', requireAuth, async (req, res) => {
       return res.status(400).json({
         success: false,
         error: {
-          code: 'NO_SUBSCRIPTION',
-          message: 'No active subscription found',
+          code: 'NO_STRIPE_CUSTOMER',
+          message: 'No Stripe customer found. Please subscribe first.',
         },
       });
     }
@@ -197,6 +209,18 @@ router.post('/subscription/change', requireAuth, async (req, res) => {
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Missing required field: newPriceId',
+        },
+      });
+    }
+
+    // Validate new price ID is from approved list
+    const validPriceIds = Object.values(PRICE_IDS);
+    if (!validPriceIds.includes(newPriceId)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_PRICE_ID',
+          message: 'Invalid price ID. Please select a valid subscription plan.',
         },
       });
     }
@@ -456,8 +480,15 @@ router.get('/invoices/:invoiceId', requireAuth, async (req, res) => {
     const invoice = await stripeService.getInvoice(invoiceId);
 
     // Verify the invoice belongs to this customer
-    // Note: Stripe API will return error if invoice doesn't belong to customer
-    // Additional check could be added here if needed
+    if (invoice.customerId !== user.stripe_customer_id) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Invoice not found',
+        },
+      });
+    }
 
     res.json({
       success: true,
@@ -506,6 +537,20 @@ router.get('/invoices/:invoiceId/pdf', requireAuth, async (req, res) => {
       .single();
 
     if (userError || !user?.stripe_customer_id) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Invoice not found',
+        },
+      });
+    }
+
+    // Get invoice first to verify ownership
+    const invoice = await stripeService.getInvoice(invoiceId);
+
+    // Verify the invoice belongs to this customer
+    if (invoice.customerId !== user.stripe_customer_id) {
       return res.status(404).json({
         success: false,
         error: {

@@ -75,7 +75,11 @@ test('Stripe Service - Validate Price IDs Configuration', async () => {
   ];
 
   const missingPriceIds = requiredPriceIds.filter(
-    (key) => !process.env[key] || process.env[key].includes('price_')
+    (key) =>
+      !process.env[key] ||
+      process.env[key].includes('price_starter') ||
+      process.env[key].includes('price_professional') ||
+      process.env[key].includes('price_agency')
   );
 
   if (missingPriceIds.length > 0) {
@@ -133,9 +137,20 @@ test('Stripe Integration - Summary', async () => {
     },
     {
       name: 'Price IDs Configured',
-      check: () =>
-        process.env.STRIPE_PRICE_STARTER_MONTHLY &&
-        !process.env.STRIPE_PRICE_STARTER_MONTHLY.includes('price_starter'),
+      check: () => {
+        const priceEnvs = [
+          'STRIPE_PRICE_STARTER_MONTHLY',
+          'STRIPE_PRICE_PROFESSIONAL_MONTHLY',
+          'STRIPE_PRICE_AGENCY_MONTHLY',
+        ];
+        return priceEnvs.every(
+          (key) =>
+            process.env[key] &&
+            !process.env[key].includes('price_starter') &&
+            !process.env[key].includes('price_professional') &&
+            !process.env[key].includes('price_agency')
+        );
+      },
       required: false,
     },
     {
