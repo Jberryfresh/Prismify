@@ -138,7 +138,7 @@ async function runMigration() {
     ];
 
     for (const table of tables) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from(table)
         .select('count', { count: 'exact', head: true })
         .limit(0);
