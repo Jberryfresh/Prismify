@@ -151,10 +151,14 @@ StartedAt: 2025-11-06
   - CompletedAt: 2025-11-06 16:30 UTC
   - Commit: 499d8f9
   - Notes: Enhanced CI workflow with Node.js matrix (18.x, 20.x), PostgreSQL + Redis services, SEO agent tests, security scanning, and comprehensive checks. Placeholder lint/format scripts added for 1.4.2.
-- [ ] 1.4.2 Add code formatting hooks (prettier/eslint) (🟡 P1-HIGH)
+- [✓] 1.4.2 Add code formatting hooks (prettier/eslint) (🟡 P1-HIGH)
   - Acceptance: `pre-commit` runs autoformat; consistent code style enforced
   - Files: `.prettierrc`, `.eslintrc.json`, `.husky/*`
   - Notes: Configure ESLint for Node.js + async/await patterns. Prettier for consistent formatting.
+  - CompletedBy: GitHub Copilot
+  - CompletedAt: 2025-11-06 17:00 UTC
+  - Commit: 54ed6c0
+  - Notes: Installed ESLint 9 with eslint.config.js, Prettier, Husky, and lint-staged. Pre-commit hooks run automatically. 0 errors, 14 minor warnings.
 - [ ] 1.4.3 Automated security scanning (🟢 P2-MEDIUM)
   - Acceptance: Dependabot alerts enabled; npm audit runs in CI
   - Files: `.github/dependabot.yml`
