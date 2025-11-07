@@ -56,7 +56,7 @@ async function runMigration() {
     console.log('⚙️  Running migration...');
     console.log('   This may take 10-30 seconds...\n');
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .rpc('exec_sql', {
         query: migrationSQL,
       })
