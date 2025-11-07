@@ -89,12 +89,17 @@ export function createClient(options = {}) {
 }
 
 // Log configuration status (without exposing secrets)
-const supabaseUrl = process.env.SUPABASE_URL;
-const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (process.env.NODE_ENV === 'development') {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-console.log('Supabase Configuration:');
-console.log(`  URL: ${supabaseUrl}`);
-console.log(`  Admin Client: ${hasServiceKey ? '✓ Enabled' : '✗ Disabled (service key not set)'}`);
+  console.log('Supabase Configuration:');
+  console.log(`  URL: ${supabaseUrl}`);
+  console.log(
+    `  Admin Client: ${hasServiceKey ? '✓ Enabled' : '✗ Disabled (service key not set)'}`
+  );
+}
 
+// Export default client and factory function
 export { supabase, supabaseAdmin };
 export default supabase;

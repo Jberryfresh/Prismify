@@ -12,7 +12,7 @@
  * @module services/auth/authService
  */
 
-import { supabase, supabaseAdmin } from '../../config/supabase.js';
+import { supabase, createClient } from '../../config/supabase.js';
 
 /**
  * Authentication Service Class
@@ -150,6 +150,22 @@ export class AuthService {
         success: false,
         error: { message: 'Failed to sign out.' },
       };
+    }
+  }
+
+  /**
+   * Admin sign out user (revokes all sessions)
+   * @param {string} userId - User ID to sign out
+   * @returns {Promise<{error: Object|null}>}
+   */
+  async adminSignOut(userId) {
+    try {
+      const adminClient = createClient({ admin: true });
+      const { error } = await adminClient.auth.admin.signOut(userId);
+      return { error };
+    } catch (error) {
+      console.error('AuthService.adminSignOut error:', error);
+      return { error: { message: 'Failed to sign out user' } };
     }
   }
 
@@ -346,15 +362,10 @@ export class AuthService {
    * @returns {Promise<{user: Object|null, error: Object|null}>}
    */
   async adminGetUser(userId) {
-    if (!supabaseAdmin) {
-      return {
-        user: null,
-        error: { message: 'Admin client not configured (service role key missing)' },
-      };
-    }
+    const adminClient = createClient({ admin: true });
 
     try {
-      const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
+      const { data, error } = await adminClient.auth.admin.getUserById(userId);
 
       if (error) {
         return { user: null, error };
@@ -380,15 +391,10 @@ export class AuthService {
    * @returns {Promise<{success: boolean, error: Object|null}>}
    */
   async adminDeleteUser(userId) {
-    if (!supabaseAdmin) {
-      return {
-        success: false,
-        error: { message: 'Admin client not configured (service role key missing)' },
-      };
-    }
+    const adminClient = createClient({ admin: true });
 
     try {
-      const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+      const { error } = await adminClient.auth.admin.deleteUser(userId);
 
       if (error) {
         return { success: false, error };

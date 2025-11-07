@@ -36,7 +36,7 @@ const TIER_HIERARCHY = {
 /**
  * Monthly quotas per subscription tier
  */
-const TIER_QUOTAS = {
+export const TIER_QUOTAS = {
   starter: {
     audits: 10,
     keywords: 50,
@@ -60,7 +60,7 @@ const TIER_QUOTAS = {
 /**
  * Feature flags per tier
  */
-const TIER_FEATURES = {
+export const TIER_FEATURES = {
   starter: ['basic_audits', 'keyword_research', 'pdf_reports'],
   professional: [
     'basic_audits',
@@ -379,8 +379,9 @@ export async function getQuotaInfo(userId) {
         remaining: limit === Infinity ? 'unlimited' : Math.max(0, limit - used),
         percentage: limit === Infinity ? 0 : Math.round((used / limit) * 100),
       };
-    } catch {
+    } catch (err) {
       // If table doesn't exist yet, set usage to 0
+      console.warn(`Could not fetch usage for ${resourceType}:`, err.message);
       quotaInfo[resourceType] = {
         limit: limit === Infinity ? 'unlimited' : limit,
         used: 0,

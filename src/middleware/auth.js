@@ -299,6 +299,7 @@ export function rateLimitByUser(maxRequests = 100, windowMs = 60000) {
  * Middleware: Extract session from cookie (for server-side rendering)
  *
  * For Next.js or other SSR frameworks that need session from cookies.
+ * Creates a per-request Supabase client with the session from the cookie.
  *
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
@@ -306,18 +307,39 @@ export function rateLimitByUser(maxRequests = 100, windowMs = 60000) {
  */
 export async function sessionFromCookie(req, res, next) {
   try {
-    // Get session from cookie (Supabase handles this automatically)
-    const { session, error } = await authService.getSession();
-
-    if (error || !session) {
+    // Extract access token from cookie
+    const cookies = req.headers.cookie;
+    if (!cookies) {
       req.user = null;
       req.session = null;
       return next();
     }
 
-    req.session = session;
-    req.user = session.user;
-    req.userId = session.user.id;
+    // Parse cookies to find access token
+    const cookieMap = {};
+    cookies.split(';').forEach((cookie) => {
+      const [name, value] = cookie.trim().split('=');
+      cookieMap[name] = value;
+    });
+
+    const accessToken = cookieMap['sb-access-token'];
+    if (!accessToken) {
+      req.user = null;
+      req.session = null;
+      return next();
+    }
+
+    // Verify token
+    const { user, error } = await authService.verifyToken(accessToken);
+
+    if (error || !user) {
+      req.user = null;
+      req.session = null;
+      return next();
+    }
+
+    req.user = user;
+    req.userId = user.id;
 
     next();
   } catch (error) {

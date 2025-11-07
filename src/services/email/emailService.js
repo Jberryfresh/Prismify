@@ -199,7 +199,12 @@ export class EmailService {
       return true; // No restrictions
     }
 
-    const domain = email.split('@')[1]?.toLowerCase();
+    const domainPart = email.split('@')[1];
+    if (!domainPart) {
+      return false; // No domain found
+    }
+
+    const domain = domainPart.toLowerCase();
     return allowedDomains.some((allowed) => domain === allowed.toLowerCase());
   }
 
@@ -222,7 +227,12 @@ export class EmailService {
       'trashmail.com',
     ];
 
-    const domain = email.split('@')[1]?.toLowerCase();
+    const domainPart = email.split('@')[1];
+    if (!domainPart) {
+      return false; // No domain found, not disposable
+    }
+
+    const domain = domainPart.toLowerCase();
     return disposableDomains.includes(domain);
   }
 }

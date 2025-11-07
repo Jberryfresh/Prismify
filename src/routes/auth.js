@@ -216,11 +216,12 @@ router.post('/signin', async (req, res) => {
 
 /**
  * POST /auth/signout
- * Sign out the current user
+ * Sign out the current user and revoke their session
  */
 router.post('/signout', requireAuth, async (req, res) => {
   try {
-    const { error } = await authService.signOut();
+    // Use admin client to revoke user's session
+    const { error } = await authService.adminSignOut(req.user.id);
 
     if (error) {
       return res.status(400).json({
@@ -499,7 +500,7 @@ router.get('/me', requireAuth, async (req, res) => {
           email: req.user.email,
           full_name: req.user.user_metadata?.full_name,
           company: req.user.user_metadata?.company,
-          email_verified: req.user.email_confirmed_at ? true : false,
+          email_verified: !!req.user.email_confirmed_at,
           created_at: req.user.created_at,
         },
       },
