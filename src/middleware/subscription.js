@@ -5,6 +5,7 @@
  * Integrates with Supabase users table to check subscription_tier column.
  *
  * Subscription Tiers:
+ * - free: No subscription - 1 audit/month, 10 keywords/month
  * - starter: $49/month - 10 audits/month, 50 keywords/month
  * - professional: $149/month - 50 audits/month, 500 keywords/month
  * - agency: $499/month - Unlimited audits and keywords
@@ -22,6 +23,8 @@
  */
 
 import { createClient } from '../config/supabase.js';
+import usageTracker from '../services/usageTracker.js';
+import subscriptionManager from '../services/subscriptionManager.js';
 
 /**
  * Subscription tier hierarchy
@@ -32,6 +35,21 @@ const TIER_HIERARCHY = {
   professional: 2,
   agency: 3,
 };
+
+/**
+ * Get appropriate error message based on subscription status
+ * @param {string} status - Subscription status
+ * @returns {string} User-friendly error message
+ */
+function getSubscriptionErrorMessage(status) {
+  if (status === subscriptionManager.SUBSCRIPTION_STATUS.PAST_DUE) {
+    return 'Your subscription payment failed. Please update your payment method to continue using the service.';
+  }
+  if (status === subscriptionManager.SUBSCRIPTION_STATUS.UNPAID) {
+    return 'Your subscription has been suspended due to payment failure. Please update your payment method to restore access.';
+  }
+  return 'Your subscription is not active. Please update your payment method or resubscribe.';
+}
 
 /**
  * Monthly quotas per subscription tier
@@ -176,22 +194,35 @@ export function requireTier(minimumTier) {
         });
       }
 
-      // Get user's subscription
-      const subscription = await getUserSubscription(req.user.id);
+      // Check subscription status (includes grace period logic)
+      const subscriptionStatus = await subscriptionManager.checkSubscriptionStatus(req.user.id);
 
-      // Check if subscription is active
-      if (subscription.status !== 'active') {
+      // Block access if subscription inactive and not in grace period
+      if (!subscriptionStatus.hasAccess) {
+        const message = getSubscriptionErrorMessage(subscriptionStatus.status);
+
         return res.status(403).json({
           success: false,
           error: {
             code: 'SUBSCRIPTION_INACTIVE',
-            message: 'Your subscription is not active. Please update your payment method.',
+            message,
+            status: subscriptionStatus.status,
+            gracePeriodEnded:
+              subscriptionStatus.status === subscriptionManager.SUBSCRIPTION_STATUS.UNPAID,
+            updatePaymentUrl: '/billing',
           },
         });
       }
 
+      // Show warning if in grace period
+      if (subscriptionStatus.inGracePeriod) {
+        res.setHeader('X-Grace-Period-Warning', 'true');
+        res.setHeader('X-Grace-Period-Days-Remaining', subscriptionStatus.daysRemaining.toString());
+        res.setHeader('X-Grace-Period-Ends-At', subscriptionStatus.gracePeriodEndsAt);
+      }
+
       // Check tier hierarchy
-      const userTierLevel = TIER_HIERARCHY[subscription.tier];
+      const userTierLevel = TIER_HIERARCHY[subscriptionStatus.tier];
       const requiredTierLevel = TIER_HIERARCHY[minimumTier];
 
       if (userTierLevel < requiredTierLevel) {
@@ -199,14 +230,22 @@ export function requireTier(minimumTier) {
           success: false,
           error: {
             code: 'INSUFFICIENT_TIER',
-            message: `This feature requires ${minimumTier} tier or higher. Your current tier: ${subscription.tier}.`,
+            message: `This feature requires ${minimumTier} tier or higher. Your current tier: ${subscriptionStatus.tier}.`,
             upgrade_url: '/pricing',
           },
         });
       }
 
       // Attach subscription to request for downstream use
-      req.subscription = subscription;
+      req.subscription = {
+        tier: subscriptionStatus.tier,
+        status: subscriptionStatus.status,
+        hasAccess: subscriptionStatus.hasAccess,
+        inGracePeriod: subscriptionStatus.inGracePeriod,
+        daysRemaining: subscriptionStatus.daysRemaining,
+        gracePeriodEndsAt: subscriptionStatus.gracePeriodEndsAt,
+        stripeCustomerId: subscriptionStatus.stripeCustomerId,
+      };
       next();
     } catch (error) {
       console.error('Subscription tier check failed:', error);
@@ -243,51 +282,33 @@ export function checkQuota(resourceType) {
         });
       }
 
-      // Get user's subscription
-      const subscription = await getUserSubscription(req.user.id);
+      // Use usageTracker service to check quota
+      const quotaCheck = await usageTracker.checkQuota(req.user.id, resourceType);
 
-      // Agency tier has unlimited quota
-      if (subscription.tier === 'agency') {
-        req.subscription = subscription;
-        return next();
-      }
-
-      // Get quota limit for user's tier
-      const quotaLimit = TIER_QUOTAS[subscription.tier][resourceType];
-      if (quotaLimit === undefined) {
-        return res.status(500).json({
-          success: false,
-          error: {
-            code: 'INVALID_RESOURCE_TYPE',
-            message: `Unknown resource type: ${resourceType}`,
-          },
-        });
-      }
-
-      // Get current usage
-      const currentUsage = await getCurrentUsage(req.user.id, resourceType);
-
-      // Check if quota exceeded
-      if (currentUsage >= quotaLimit) {
+      // Check if action is allowed
+      if (!quotaCheck.allowed) {
         return res.status(429).json({
           success: false,
           error: {
             code: 'QUOTA_EXCEEDED',
-            message: `You've reached your monthly limit of ${quotaLimit} ${resourceType}. Upgrade your plan for more.`,
-            current_usage: currentUsage,
-            quota_limit: quotaLimit,
+            message: `You've reached your monthly limit for ${resourceType}. Upgrade your plan for more.`,
+            current_tier: quotaCheck.tier,
+            current_usage: quotaCheck.usage,
+            quota_limits: quotaCheck.quotas,
+            reset_date: quotaCheck.resetDate,
             upgrade_url: '/pricing',
           },
         });
       }
 
-      // Attach subscription and usage info to request
-      req.subscription = subscription;
+      // Attach quota info to request for downstream use
       req.quota = {
         type: resourceType,
-        limit: quotaLimit,
-        used: currentUsage,
-        remaining: quotaLimit - currentUsage,
+        tier: quotaCheck.tier,
+        usage: quotaCheck.usage,
+        quotas: quotaCheck.quotas,
+        remaining: quotaCheck.remaining,
+        resetDate: quotaCheck.resetDate,
       };
 
       next();
@@ -297,7 +318,7 @@ export function checkQuota(resourceType) {
         success: false,
         error: {
           code: 'QUOTA_CHECK_FAILED',
-          message: 'Failed to verify quota',
+          message: 'Failed to check usage quota',
         },
       });
     }
