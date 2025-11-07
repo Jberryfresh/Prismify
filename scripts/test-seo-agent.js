@@ -30,7 +30,8 @@ async function testSEOAgent() {
         Modern SEO focuses on quality content, user experience, and technical optimization.
         By following these SEO best practices, you'll see significant improvements.
       `.trim(),
-      excerpt: 'Learn the top SEO strategies and techniques to boost your website rankings in 2025.',
+      excerpt:
+        'Learn the top SEO strategies and techniques to boost your website rankings in 2025.',
     };
 
     console.log('\n📝 Test Content:');
@@ -62,7 +63,9 @@ async function testSEOAgent() {
 
     console.log('✅ Generated Meta Tags:');
     console.log(`   Meta Title: ${metaTags.metaTitle || 'N/A'}`);
-    console.log(`   Meta Description: ${metaTags.metaDescription ? metaTags.metaDescription.substring(0, 60) + '...' : 'N/A'}`);
+    console.log(
+      `   Meta Description: ${metaTags.metaDescription ? metaTags.metaDescription.substring(0, 60) + '...' : 'N/A'}`
+    );
     console.log(`   Focus Keyword: ${metaTags.focusKeyword || 'N/A'}`);
     console.log(`   OG Title: ${metaTags.ogTitle || 'N/A'}`);
 
@@ -118,7 +121,9 @@ async function testSEOAgent() {
     console.log(`   Provider: ${seoAgent.name}`);
     console.log(`   Status: ${seoAgent.status}`);
     console.log(`   Tasks Executed: ${seoAgent.stats.tasksExecuted}`);
-    console.log(`   Success Rate: ${seoAgent.stats.tasksSucceeded}/${seoAgent.stats.tasksExecuted}`);
+    console.log(
+      `   Success Rate: ${seoAgent.stats.tasksSucceeded}/${seoAgent.stats.tasksExecuted}`
+    );
 
     console.log('\n✅ SEO Agent is working perfectly!');
     console.log('🚀 Ready to integrate into your Prismify API!\n');

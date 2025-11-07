@@ -465,7 +465,7 @@ import { useForm } from 'react-hook-form';
 export function AuditForm() {
   const { register, handleSubmit } = useForm();
 
-  const onSubmit = async data => {
+  const onSubmit = async (data) => {
     const res = await fetch('/api/audits', {
       method: 'POST',
       body: JSON.stringify(data),

@@ -63,7 +63,8 @@
    - **anon/public key**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (long string)
    - **service_role key**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (different long string)
 
-⚠️ **IMPORTANT**: 
+⚠️ **IMPORTANT**:
+
 - `anon` key is safe for frontend
 - `service_role` key is SECRET - only use in backend!
 
@@ -91,6 +92,7 @@ DB_SSL=true
 ```
 
 ### Example (with fake values):
+
 ```bash
 DATABASE_URL=postgresql://postgres:MySecurePass123!@db.xyzabc123.supabase.co:5432/postgres
 SUPABASE_URL=https://xyzabc123.supabase.co
@@ -439,16 +441,19 @@ users                    → User accounts & subscriptions
 ## 🆘 Troubleshooting
 
 ### "Connection refused"
+
 - Check your firewall settings
 - Verify password is correct
 - Confirm project is fully provisioned (wait 3-5 min)
 
 ### "Invalid API key"
+
 - Make sure you copied the full key (they're very long!)
 - Check for extra spaces in `.env` file
 - Verify project URL matches
 
 ### "Table does not exist"
+
 - Run the SQL schema from Step 6
 - Check SQL Editor for error messages
 

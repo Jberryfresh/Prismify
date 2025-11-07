@@ -428,7 +428,7 @@ Provide only the JSON array, no additional text.`;
 
       if (includeSummary) {
         analyses.push(
-          this.generateSummary(article).then(result => {
+          this.generateSummary(article).then((result) => {
             results.analysis.summary = result;
           })
         );
@@ -436,7 +436,7 @@ Provide only the JSON array, no additional text.`;
 
       if (includeSentiment) {
         analyses.push(
-          this.analyzeSentiment(article).then(result => {
+          this.analyzeSentiment(article).then((result) => {
             results.analysis.sentiment = result;
           })
         );
@@ -444,7 +444,7 @@ Provide only the JSON array, no additional text.`;
 
       if (includeKeyPoints) {
         analyses.push(
-          this.extractKeyPoints(article).then(result => {
+          this.extractKeyPoints(article).then((result) => {
             results.analysis.keyPoints = result;
           })
         );
@@ -452,7 +452,7 @@ Provide only the JSON array, no additional text.`;
 
       if (includeCategory) {
         analyses.push(
-          this.categorizeArticle(article).then(result => {
+          this.categorizeArticle(article).then((result) => {
             results.analysis.category = result;
           })
         );
@@ -460,7 +460,7 @@ Provide only the JSON array, no additional text.`;
 
       if (includeEntities) {
         analyses.push(
-          this.extractEntities(article).then(result => {
+          this.extractEntities(article).then((result) => {
             results.analysis.entities = result;
           })
         );
@@ -468,7 +468,7 @@ Provide only the JSON array, no additional text.`;
 
       if (includeTags) {
         analyses.push(
-          this.generateTags(article).then(result => {
+          this.generateTags(article).then((result) => {
             results.analysis.tags = result;
           })
         );
@@ -480,7 +480,7 @@ Provide only the JSON array, no additional text.`;
       const duration = Date.now() - startTime;
       let totalTokens = 0;
 
-      Object.values(results.analysis).forEach(analysis => {
+      Object.values(results.analysis).forEach((analysis) => {
         if (analysis.metadata?.tokensUsed) {
           totalTokens += analysis.metadata.tokensUsed;
         }

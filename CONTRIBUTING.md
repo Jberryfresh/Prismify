@@ -3,6 +3,7 @@
 Thank you for your interest in contributing to Prismify! This document provides guidelines and instructions for contributing.
 
 ## 📋 Table of Contents
+
 - [Code of Conduct](#code-of-conduct)
 - [Getting Started](#getting-started)
 - [Development Workflow](#development-workflow)
@@ -21,23 +22,27 @@ Thank you for your interest in contributing to Prismify! This document provides 
 ## 🚀 Getting Started
 
 1. **Fork and Clone**
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/Prismify.git
    cd Prismify
    ```
 
 2. **Install Dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set Up Environment**
+
    ```bash
    cp .env.example .env
    # Edit .env with your credentials
    ```
 
 4. **Run Database Migrations**
+
    ```bash
    npm run migrate
    npm run verify
@@ -52,12 +57,14 @@ Thank you for your interest in contributing to Prismify! This document provides 
 ## 💻 Development Workflow
 
 ### Before You Start
+
 1. Check `.agents/PROJECT_TODO.md` for available tasks
 2. Find an unclaimed task or propose a new one
 3. Comment on related issues or create a new one
 4. Wait for approval before starting major work
 
 ### While Working
+
 1. Mark task as `[🔲]` in `PROJECT_TODO.md`
 2. Create a feature branch (see naming below)
 3. Make small, focused commits
@@ -65,6 +72,7 @@ Thank you for your interest in contributing to Prismify! This document provides 
 5. Update documentation as needed
 
 ### When Complete
+
 1. Mark task as `[✓]` in `PROJECT_TODO.md`
 2. Add completion notes (branch, PR link, tests run)
 3. Submit PR using the template
@@ -73,16 +81,19 @@ Thank you for your interest in contributing to Prismify! This document provides 
 ## 🌿 Branch & Commit Guidelines
 
 ### Branch Naming
+
 ```
 phase-{X}.{Y}-{short-description}
 ```
 
 Examples:
+
 - `phase-1.2-environment-secrets`
 - `phase-2.1-jwt-auth`
 - `phase-3.1-seo-agent-hardening`
 
 ### Commit Messages
+
 ```
 [PHASE-X.Y] Short description - P{0|1|2|3}
 
@@ -93,6 +104,7 @@ Longer explanation if needed:
 ```
 
 Example:
+
 ```
 [PHASE-2.1] Implement JWT auth with refresh tokens - P0
 
@@ -120,6 +132,7 @@ Breaking: Requires JWT_SECRET and JWT_REFRESH_SECRET in .env
    - `.agents/PROJECT_TODO.md` updated
 
 ### Review Process
+
 - At least one approval required
 - Address all feedback or explain why not
 - Keep discussion focused and respectful
@@ -128,6 +141,7 @@ Breaking: Requires JWT_SECRET and JWT_REFRESH_SECRET in .env
 ## 🧪 Testing
 
 ### Run Tests
+
 ```bash
 # All tests
 npm test
@@ -141,12 +155,14 @@ npm run test:coverage
 ```
 
 ### Writing Tests
+
 - Write tests for all new features
 - Update tests for modified features
 - Aim for >80% coverage on new code
 - Include edge cases and error scenarios
 
 ### Test Structure
+
 ```javascript
 describe('Feature Name', () => {
   beforeEach(() => {
@@ -166,6 +182,7 @@ describe('Feature Name', () => {
 ## 📚 Documentation
 
 ### What to Document
+
 - Public APIs and endpoints
 - Agent capabilities and usage
 - Configuration options
@@ -174,6 +191,7 @@ describe('Feature Name', () => {
 - Breaking changes
 
 ### Where to Document
+
 - Code: JSDoc comments for functions/classes
 - `docs/`: User-facing guides and tutorials
 - `README.md`: Quick start and overview
@@ -181,6 +199,7 @@ describe('Feature Name', () => {
 - `CHANGELOG.md`: Version history
 
 ### Documentation Standards
+
 - Clear, concise language
 - Include examples
 - Keep up to date with code changes
@@ -196,6 +215,7 @@ describe('Feature Name', () => {
 ## 🐛 Bug Reports
 
 Include:
+
 - Expected behavior
 - Actual behavior
 - Steps to reproduce
@@ -206,6 +226,7 @@ Include:
 ## 💡 Feature Requests
 
 Include:
+
 - Problem statement
 - Proposed solution
 - Alternative solutions considered
@@ -222,6 +243,7 @@ Include:
 ## 🎉 Recognition
 
 Contributors will be:
+
 - Listed in `CONTRIBUTORS.md`
 - Credited in release notes
 - Thanked in the community

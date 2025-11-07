@@ -3,22 +3,22 @@
 /**
  * Generate Secure Secrets for Prismify
  * ====================================
- * 
+ *
  * This script generates cryptographically secure random secrets for:
  * - JWT_SECRET (access tokens)
  * - JWT_REFRESH_SECRET (refresh tokens)
  * - SESSION_SECRET (session management)
- * 
+ *
  * Usage:
  *   node scripts/generate-secrets.js
- * 
+ *
  * SECURITY NOTES:
  * - Secrets are printed to stdout only (never persisted to disk)
  * - Use crypto.randomBytes for cryptographic security
  * - Minimum length: 32 characters (256 bits) for production
  * - Copy these values to your .env file manually
  * - NEVER commit these secrets to version control
- * 
+ *
  * @author Prismify Development Team
  * @date November 2025
  */

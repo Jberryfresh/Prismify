@@ -3,6 +3,7 @@
 ## Overview
 
 Prismify uses a **dual AI architecture** that allows you to:
+
 - ✅ Start with **FREE Google Gemini** (15 requests/minute)
 - ✅ Switch to **PAID Claude AI** when you have funding
 - ✅ **Zero code changes** needed to transition between providers
@@ -14,6 +15,7 @@ Prismify uses a **dual AI architecture** that allows you to:
 ### Using Google Gemini (FREE)
 
 **Why Gemini?**
+
 - ✨ **100% FREE** to get started
 - ⚡ 15 requests per minute (plenty for MVP testing)
 - 🎓 Perfect for beta testing and first customers
@@ -39,6 +41,7 @@ AI_PROVIDER=gemini
 ### Upgrading to Claude AI (PAID)
 
 **Why Claude for Production?**
+
 - 🏆 **Best-in-class** SEO content generation
 - 📝 Superior meta tag quality
 - 🎯 More accurate keyword suggestions
@@ -84,19 +87,21 @@ unifiedAIService.js  ← Smart Router
 
 ## 📊 Cost Comparison
 
-| Provider | Cost | Speed | Quality | Best For |
-|----------|------|-------|---------|----------|
-| **Gemini** (Current) | **FREE** | Fast | Good | MVP, Testing, Bootstrap |
-| **Claude** (Future) | $3/1M tokens | Fast | Excellent | Production, Scale |
+| Provider             | Cost         | Speed | Quality   | Best For                |
+| -------------------- | ------------ | ----- | --------- | ----------------------- |
+| **Gemini** (Current) | **FREE**     | Fast  | Good      | MVP, Testing, Bootstrap |
+| **Claude** (Future)  | $3/1M tokens | Fast  | Excellent | Production, Scale       |
 
 ### Estimated Costs at Scale
 
 **With Gemini (FREE):**
+
 - First 1,000 customers: $0/month
 - Rate limited to 15 requests/minute
 - Perfect for validation phase
 
 **With Claude (When Ready):**
+
 - 10,000 API calls/month: ~$30/month
 - 100,000 API calls/month: ~$300/month
 - Unlimited rate (within reason)
@@ -131,8 +136,8 @@ await unifiedAIService.initialize();
 
 // Test
 const result = await unifiedAIService.generateText({
-  prompt: "Generate 3 SEO keywords for a digital marketing blog",
-  maxTokens: 100
+  prompt: 'Generate 3 SEO keywords for a digital marketing blog',
+  maxTokens: 100,
 });
 
 console.log(result.text);
@@ -149,13 +154,15 @@ console.log(result.text);
 ### "Rate limit exceeded"
 
 **Solution**: You're hitting the 15 req/min free limit. Options:
+
 1. Add delays between requests
 2. Upgrade to paid Gemini ($0.075/1M tokens)
 3. Switch to Claude when funded
 
 ### "API key invalid"
 
-**Solution**: 
+**Solution**:
+
 1. Verify key at https://aistudio.google.com/app/apikey
 2. Make sure there are no spaces in the key
 3. Restart your application
@@ -165,18 +172,21 @@ console.log(result.text);
 ## 🎯 Revenue Milestone Plan
 
 ### Phase 1: Bootstrap (Current)
+
 - **AI**: Gemini (FREE)
 - **Revenue**: $0 - $5,000 MRR
 - **Users**: 0 - 100 customers
 - **Cost**: $0/month
 
 ### Phase 2: Growth
+
 - **AI**: Gemini (FREE) or Paid Gemini ($0.075/1M tokens)
 - **Revenue**: $5,000 - $25,000 MRR
 - **Users**: 100 - 500 customers
 - **Cost**: $0 - $100/month
 
 ### Phase 3: Scale
+
 - **AI**: Claude ($3/1M tokens)
 - **Revenue**: $25,000+ MRR
 - **Users**: 500+ customers
@@ -211,7 +221,7 @@ You now have a **production-ready SEO AI system** that:
 ✅ Handles **15 requests/minute** (perfect for MVP)  
 ✅ Switches to **premium Claude** with ONE line change  
 ✅ Zero downtime during transition  
-✅ Battle-tested from DigitalTide  
+✅ Battle-tested from DigitalTide
 
 **Get your free Gemini API key now and start building!** 🚀
 
