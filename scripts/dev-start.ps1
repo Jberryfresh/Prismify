@@ -7,8 +7,8 @@ Write-Host ""
 
 # Check if Docker is running
 Write-Host "Checking Docker..." -ForegroundColor Yellow
-$dockerRunning = docker info 2>$null
-if (-not $dockerRunning) {
+docker info 2>$null | Out-Null
+if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Docker is not running. Please start Docker Desktop and try again." -ForegroundColor Red
     exit 1
 }
