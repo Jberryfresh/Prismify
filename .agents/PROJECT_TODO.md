@@ -249,10 +249,14 @@ StartedAt: 2025-11-07
   - Commit: f37d6c6
   - PR: https://github.com/Jberryfresh/Prismify/pull/new/phase-2.2-stripe-billing
   - Notes: Created usageTracker service with monthly usage tracking, quota checking (tier-based limits), dashboard usage statistics with warnings, API usage logging for analytics. Updated subscription middleware to integrate with usageTracker. Quotas: Starter (10 audits, 50 keywords, 3 projects), Professional (50/500/10), Agency (unlimited). Efficient timestamp-based queries (no manual resets needed).
-- [ ] 2.2.4 Billing portal and invoice management (🟢 P2-MEDIUM)
+- [✓] 2.2.4 Billing portal and invoice management (🟢 P2-MEDIUM)
   - Acceptance: Users can update payment methods, download invoices, view billing history
-  - Files: `src/routes/billing.js`, frontend billing dashboard
-  - Notes: Use Stripe Customer Portal for self-service billing management.
+  - Files: `src/routes/billing.js`, `src/services/stripe/stripeService.js`
+  - CompletedBy: GitHub Copilot
+  - CompletedAt: 2025-11-07 16:00 UTC
+  - Commit: 18c5778
+  - PR: https://github.com/Jberryfresh/Prismify/pull/new/phase-2.2-stripe-billing
+  - Notes: Complete invoice management system with 4 new API endpoints and 4 service methods. Added listInvoices(), getInvoice(), getUpcomingInvoice(), downloadInvoicePDF() to stripeService. Created billing routes: GET /api/billing/invoices (list with pagination), GET /api/billing/invoices/:id (details), GET /api/billing/invoices/:id/pdf (download), GET /api/billing/upcoming (preview). Customer ownership verification for secure invoice access. Stripe Customer Portal endpoint already existed from 2.2.1. All code passes ESLint 0 errors.
 
 ## 2.3 Core API Endpoints (🟡 P1-HIGH)
 
