@@ -13,6 +13,7 @@
 
 import Stripe from 'stripe';
 import stripeService from '../../services/stripe/stripeService.js';
+import subscriptionManager from '../../services/subscriptionManager.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2024-11-20.acacia',
@@ -160,6 +161,15 @@ async function handlePaymentSucceeded(invoice) {
       const subscription = await stripeService.getSubscription(subscriptionId);
       await stripeService.syncSubscriptionToDatabase(subscription);
 
+      // Get user ID from subscription metadata
+      const userId = subscription.metadata?.supabase_user_id;
+
+      // Reactivate subscription if it was in past_due status
+      if (userId && subscription.status === 'active') {
+        await subscriptionManager.reactivateSubscription(userId);
+        console.log(`Subscription reactivated after successful payment for user: ${userId}`);
+      }
+
       // TODO: Send payment receipt email
       // TODO: Log payment in analytics
 
@@ -185,12 +195,19 @@ async function handlePaymentFailed(invoice) {
       // Retrieve subscription to check status
       const subscription = await stripeService.getSubscription(subscriptionId);
 
-      // TODO: Send payment failed email with update payment link
-      // TODO: Trigger dunning sequence (3-day grace period)
-      // TODO: Alert if high-value customer
+      // Get user ID from subscription metadata
+      const userId = subscription.metadata?.supabase_user_id;
+      const customerId = invoice.customer;
 
-      console.log('Payment failure handled:', invoice.id);
-      console.log('Subscription status:', subscription.status);
+      if (userId) {
+        // Trigger grace period and dunning sequence
+        await subscriptionManager.handlePaymentFailure(userId, customerId, invoice);
+
+        console.log(`Payment failure handled for user ${userId}. Grace period initiated.`);
+        console.log('Subscription status:', subscription.status);
+      } else {
+        console.error('No user ID found in subscription metadata for:', subscriptionId);
+      }
     }
   } catch (error) {
     console.error('Error handling invoice.payment_failed:', error);

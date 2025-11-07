@@ -24,6 +24,7 @@
 
 import { createClient } from '../config/supabase.js';
 import usageTracker from '../services/usageTracker.js';
+import subscriptionManager from '../services/subscriptionManager.js';
 
 /**
  * Subscription tier hierarchy
@@ -178,22 +179,40 @@ export function requireTier(minimumTier) {
         });
       }
 
-      // Get user's subscription
-      const subscription = await getUserSubscription(req.user.id);
+      // Check subscription status (includes grace period logic)
+      const subscriptionStatus = await subscriptionManager.checkSubscriptionStatus(req.user.id);
 
-      // Check if subscription is active
-      if (subscription.status !== 'active') {
+      // Block access if subscription inactive and not in grace period
+      if (!subscriptionStatus.hasAccess) {
+        const message =
+          subscriptionStatus.status === subscriptionManager.SUBSCRIPTION_STATUS.PAST_DUE
+            ? 'Your subscription payment failed. Please update your payment method to continue using the service.'
+            : subscriptionStatus.status === subscriptionManager.SUBSCRIPTION_STATUS.UNPAID
+              ? 'Your subscription has been suspended due to payment failure. Please update your payment method to restore access.'
+              : 'Your subscription is not active. Please update your payment method or resubscribe.';
+
         return res.status(403).json({
           success: false,
           error: {
             code: 'SUBSCRIPTION_INACTIVE',
-            message: 'Your subscription is not active. Please update your payment method.',
+            message,
+            status: subscriptionStatus.status,
+            gracePeriodEnded:
+              subscriptionStatus.status === subscriptionManager.SUBSCRIPTION_STATUS.UNPAID,
+            updatePaymentUrl: '/billing',
           },
         });
       }
 
+      // Show warning if in grace period
+      if (subscriptionStatus.inGracePeriod) {
+        res.setHeader('X-Grace-Period-Warning', 'true');
+        res.setHeader('X-Grace-Period-Days-Remaining', subscriptionStatus.daysRemaining.toString());
+        res.setHeader('X-Grace-Period-Ends-At', subscriptionStatus.gracePeriodEndsAt);
+      }
+
       // Check tier hierarchy
-      const userTierLevel = TIER_HIERARCHY[subscription.tier];
+      const userTierLevel = TIER_HIERARCHY[subscriptionStatus.tier];
       const requiredTierLevel = TIER_HIERARCHY[minimumTier];
 
       if (userTierLevel < requiredTierLevel) {
@@ -201,14 +220,22 @@ export function requireTier(minimumTier) {
           success: false,
           error: {
             code: 'INSUFFICIENT_TIER',
-            message: `This feature requires ${minimumTier} tier or higher. Your current tier: ${subscription.tier}.`,
+            message: `This feature requires ${minimumTier} tier or higher. Your current tier: ${subscriptionStatus.tier}.`,
             upgrade_url: '/pricing',
           },
         });
       }
 
       // Attach subscription to request for downstream use
-      req.subscription = subscription;
+      req.subscription = {
+        tier: subscriptionStatus.tier,
+        status: subscriptionStatus.status,
+        hasAccess: subscriptionStatus.hasAccess,
+        inGracePeriod: subscriptionStatus.inGracePeriod,
+        daysRemaining: subscriptionStatus.daysRemaining,
+        gracePeriodEndsAt: subscriptionStatus.gracePeriodEndsAt,
+        stripeCustomerId: subscriptionStatus.stripeCustomerId,
+      };
       next();
     } catch (error) {
       console.error('Subscription tier check failed:', error);

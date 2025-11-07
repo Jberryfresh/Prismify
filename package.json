@@ -22,6 +22,7 @@
     "migrate:local": "node scripts/run-migration-local.js",
     "seed": "node scripts/seed-data.js",
     "verify": "node scripts/verify-database.js",
+    "cron:grace-periods": "node scripts/process-grace-periods.js",
     "docker:start": "pwsh scripts/dev-start.ps1",
     "docker:stop": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
