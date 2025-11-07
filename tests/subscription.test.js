@@ -3,6 +3,20 @@
  *
  * Integration tests for subscription tier enforcement and role-based access control.
  * Tests quota limits, feature access, and tier requirements.
+ *
+ * **NOTE:** These tests query Supabase (cloud), not local PostgreSQL.
+ * To run successfully, you need:
+ * 1. Valid SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env
+ * 2. Test users in Supabase users table with IDs matching below
+ * 3. Run seed data against Supabase (not just local Docker)
+ *
+ * For local testing only (without Supabase), these tests will fail with "User subscription not found".
+ * This is expected behavior. The middleware is designed for production use with Supabase.
+ *
+ * To set up test data in Supabase:
+ * 1. Sign up 3 test users via Supabase Auth
+ * 2. Update their subscription_tier in the users table
+ * 3. Update the USER_ID constants below with actual Supabase user UUIDs
  */
 
 import { describe, it, before, after } from 'node:test';
@@ -17,10 +31,11 @@ import {
   getUserFeatures,
 } from '../src/middleware/subscription.js';
 
-// Test user IDs (these should exist in your seed data)
-const STARTER_USER_ID = '00000000-0000-0000-0000-000000000001';
-const PROFESSIONAL_USER_ID = '00000000-0000-0000-0000-000000000002';
-const AGENCY_USER_ID = '00000000-0000-0000-0000-000000000003';
+// Test user IDs from seed data (check database with: docker exec prismify-postgres psql -U prismify -d prismify_dev -c "SELECT id, email, subscription_tier FROM users;")
+// These IDs are for LOCAL database only. For Supabase tests, replace with actual Supabase user IDs.
+const STARTER_USER_ID = 'c8d934b7-00ee-46de-8a97-26062f249d4c'; // starter@prismify.test (LOCAL)
+const PROFESSIONAL_USER_ID = 'f43d71f8-129a-461b-9981-1a83a3737460'; // professional@prismify.test (LOCAL)
+const AGENCY_USER_ID = 'f0c273ea-fcc1-4bbd-ae5f-8e47efd0941b'; // agency@prismify.test (LOCAL)
 
 describe('Subscription & RBAC Tests', () => {
   let supabase;

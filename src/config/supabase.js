@@ -7,7 +7,7 @@
  * @module config/supabase
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -30,7 +30,7 @@ if (missingVars.length > 0) {
 }
 
 /**
- * Supabase client instance
+ * Supabase client instance (default)
  *
  * Used for all Supabase operations including:
  * - Authentication (sign up, sign in, sign out)
@@ -38,7 +38,7 @@ if (missingVars.length > 0) {
  * - Real-time subscriptions
  * - Storage operations
  */
-export const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+const supabase = createSupabaseClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -55,14 +55,38 @@ export const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPAB
  * - Bulk operations
  * - System-level queries
  */
-export const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
+  ? createSupabaseClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
       },
     })
   : null;
+
+/**
+ * Create Supabase client (factory function)
+ *
+ * @param {Object} options - Client options
+ * @param {boolean} options.admin - Use admin client (bypasses RLS)
+ * @returns {Object} Supabase client instance
+ *
+ * @example
+ * // Regular client (respects RLS)
+ * const supabase = createClient();
+ *
+ * // Admin client (bypasses RLS)
+ * const supabase = createClient({ admin: true });
+ */
+export function createClient(options = {}) {
+  if (options.admin) {
+    if (!supabaseAdmin) {
+      throw new Error('Admin client not available. Set SUPABASE_SERVICE_ROLE_KEY in .env');
+    }
+    return supabaseAdmin;
+  }
+  return supabase;
+}
 
 // Log configuration status (without exposing secrets)
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -72,4 +96,5 @@ console.log('Supabase Configuration:');
 console.log(`  URL: ${supabaseUrl}`);
 console.log(`  Admin Client: ${hasServiceKey ? '✓ Enabled' : '✗ Disabled (service key not set)'}`);
 
+export { supabase, supabaseAdmin };
 export default supabase;
