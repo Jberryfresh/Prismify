@@ -10,26 +10,26 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run ESLint
-      run: npm run lint
-      continue-on-error: false
-    
-    - name: Check formatting with Prettier
-      run: npm run format:check || echo "Prettier check not configured yet"
-      continue-on-error: true
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: false
+
+      - name: Check formatting with Prettier
+        run: npm run format:check || echo "Prettier check not configured yet"
+        continue-on-error: true
 
   test:
     name: Test (Node ${{ matrix.node-version }})
@@ -37,7 +37,7 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x]
-    
+
     services:
       postgres:
         image: postgres:16
@@ -52,7 +52,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      
+
       redis:
         image: redis:7-alpine
         options: >-
@@ -62,123 +62,132 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Create test environment file
-      run: |
-        cat > .env << EOF
-        # Test Database
-        DATABASE_URL=postgresql://prismify:prismify_test_password@localhost:5432/prismify_test
-        DB_HOST=localhost
-        DB_PORT=5432
-        DB_NAME=prismify_test
-        DB_USER=prismify
-        DB_PASSWORD=prismify_test_password
-        
-        # Redis
-        REDIS_URL=redis://localhost:6379
-        REDIS_HOST=localhost
-        REDIS_PORT=6379
-        
-        # Test Supabase (mock values)
-        SUPABASE_URL=https://test.supabase.co
-        SUPABASE_ANON_KEY=test-anon-key
-        SUPABASE_SERVICE_ROLE_KEY=test-service-key
-        
-        # Test AI Provider
-        GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
-        AI_PROVIDER=gemini
-        GEMINI_MODEL=gemini-2.0-flash-lite
-        
-        # Environment
-        NODE_ENV=test
-        EOF
-    
-    - name: Run database tests
-      run: npm run test:db || echo "Database tests not fully configured yet"
-      continue-on-error: true
-    
-    - name: Run SEO agent tests
-      run: npm run test:agent
-      env:
-        NODE_ENV: test
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      continue-on-error: false
-    
-    - name: Run unit tests
-      run: npm test || echo "Unit tests not yet configured"
-      env:
-        NODE_ENV: test
-      continue-on-error: true
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create test environment file
+        run: |
+          cat > .env << EOF
+          # Test Database
+          DATABASE_URL=postgresql://prismify:prismify_test_password@localhost:5432/prismify_test
+          DB_HOST=localhost
+          DB_PORT=5432
+          DB_NAME=prismify_test
+          DB_USER=prismify
+          DB_PASSWORD=prismify_test_password
+
+          # Redis
+          REDIS_URL=redis://localhost:6379
+          REDIS_HOST=localhost
+          REDIS_PORT=6379
+
+          # Test Supabase (mock values)
+          SUPABASE_URL=https://test.supabase.co
+          SUPABASE_ANON_KEY=test-anon-key
+          SUPABASE_SERVICE_ROLE_KEY=test-service-key
+
+          # Test AI Provider
+          GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+          AI_PROVIDER=gemini
+          GEMINI_MODEL=gemini-2.0-flash-lite
+
+          # Environment
+          NODE_ENV=test
+          EOF
+
+      - name: Run database tests
+        run: npm run test:db || echo "Database tests not fully configured yet"
+        continue-on-error: true
+
+      - name: Run SEO agent tests
+        run: npm run test:agent
+        env:
+          NODE_ENV: test
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        continue-on-error: false
+
+      - name: Run unit tests
+        run: npm test || echo "Unit tests not yet configured"
+        env:
+          NODE_ENV: test
+        continue-on-error: true
 
   build:
     name: Build
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build project
-      run: npm run build || echo "Build script not yet configured"
-      continue-on-error: true
-    
-    - name: Verify project structure
-      run: |
-        echo "Verifying critical files exist..."
-        test -f package.json || exit 1
-        test -d src || exit 1
-        test -d src/agents || exit 1
-        test -d src/services || exit 1
-        test -f src/agents/specialized/SEOAgent.js || exit 1
-        echo "✓ Project structure verified"
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build || echo "Build script not yet configured"
+        continue-on-error: true
+
+      - name: Verify project structure
+        run: |
+          echo "Verifying critical files exist..."
+          test -f package.json || exit 1
+          test -d src || exit 1
+          test -d src/agents || exit 1
+          test -d src/services || exit 1
+          test -f src/agents/specialized/SEOAgent.js || exit 1
+          echo "✓ Project structure verified"
 
   security:
     name: Security Audit
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Run npm audit
-      run: npm audit --audit-level=moderate
-      continue-on-error: true
-    
-    - name: Check for secrets in code
-      run: |
-        echo "Checking for accidental secret commits..."
-        ! grep -r "SUPABASE_SERVICE_ROLE_KEY=" --include="*.js" --include="*.ts" --include="*.json" . || exit 1
-        ! grep -r "sk-" --include="*.js" --include="*.ts" . || exit 1
-        ! grep -r "password.*=.*['\"].*['\"]" --include="*.js" --include="*.ts" . || exit 1
-        echo "✓ No obvious secrets found in code"
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Check for secrets in code
+        run: |
+          echo "Checking for accidental secret commits..."
+          ! grep -r "SUPABASE_SERVICE_ROLE_KEY=" \
+            --include="*.js" --include="*.ts" --include="*.json" \
+            --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=build --exclude-dir=coverage \
+            . || exit 1
+          ! grep -r "sk-" \
+            --include="*.js" --include="*.ts" \
+            --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=build --exclude-dir=coverage \
+            . || exit 1
+          ! grep -r "password.*=.*['\"].*['\"]" \
+            --include="*.js" --include="*.ts" \
+            --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=build --exclude-dir=coverage \
+            . || exit 1
+          echo "✓ No obvious secrets found in code"
 
   all-checks:
     name: All Checks Passed
