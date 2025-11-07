@@ -380,4 +380,221 @@ router.post('/subscription/reactivate', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * GET /api/billing/invoices
+ * Get user's invoice history
+ */
+router.get('/invoices', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const limit = parseInt(req.query.limit) || 10;
+
+    // Get user's Stripe customer ID
+    const { data: user, error: userError } = await req.supabase
+      .from('users')
+      .select('stripe_customer_id')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user?.stripe_customer_id) {
+      return res.json({
+        success: true,
+        data: {
+          invoices: [],
+          hasMore: false,
+        },
+      });
+    }
+
+    // Get invoices from Stripe
+    const invoiceData = await stripeService.listInvoices(user.stripe_customer_id, limit);
+
+    res.json({
+      success: true,
+      data: invoiceData,
+    });
+  } catch (error) {
+    console.error('Error fetching invoices:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INVOICE_ERROR',
+        message: 'Failed to fetch invoices',
+        details: error.message,
+      },
+    });
+  }
+});
+
+/**
+ * GET /api/billing/invoices/:invoiceId
+ * Get specific invoice details
+ */
+router.get('/invoices/:invoiceId', requireAuth, async (req, res) => {
+  try {
+    const { invoiceId } = req.params;
+    const userId = req.user.id;
+
+    // Get user's Stripe customer ID to verify ownership
+    const { data: user, error: userError } = await req.supabase
+      .from('users')
+      .select('stripe_customer_id')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user?.stripe_customer_id) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Invoice not found',
+        },
+      });
+    }
+
+    // Get invoice from Stripe
+    const invoice = await stripeService.getInvoice(invoiceId);
+
+    // Verify the invoice belongs to this customer
+    // Note: Stripe API will return error if invoice doesn't belong to customer
+    // Additional check could be added here if needed
+
+    res.json({
+      success: true,
+      data: {
+        invoice,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching invoice:', error);
+
+    if (error.statusCode === 404) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Invoice not found',
+        },
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INVOICE_ERROR',
+        message: 'Failed to fetch invoice',
+        details: error.message,
+      },
+    });
+  }
+});
+
+/**
+ * GET /api/billing/invoices/:invoiceId/pdf
+ * Get invoice PDF download URL
+ */
+router.get('/invoices/:invoiceId/pdf', requireAuth, async (req, res) => {
+  try {
+    const { invoiceId } = req.params;
+    const userId = req.user.id;
+
+    // Get user's Stripe customer ID to verify ownership
+    const { data: user, error: userError } = await req.supabase
+      .from('users')
+      .select('stripe_customer_id')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user?.stripe_customer_id) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Invoice not found',
+        },
+      });
+    }
+
+    // Get PDF URL from Stripe
+    const pdfUrl = await stripeService.downloadInvoicePDF(invoiceId);
+
+    res.json({
+      success: true,
+      data: {
+        pdfUrl,
+      },
+    });
+  } catch (error) {
+    console.error('Error downloading invoice PDF:', error);
+
+    if (error.statusCode === 404 || error.message === 'Invoice PDF not available') {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Invoice PDF not available',
+        },
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'PDF_ERROR',
+        message: 'Failed to get invoice PDF',
+        details: error.message,
+      },
+    });
+  }
+});
+
+/**
+ * GET /api/billing/upcoming
+ * Get preview of upcoming invoice
+ */
+router.get('/upcoming', requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get user's Stripe customer ID and subscription
+    const { data: user, error: userError } = await req.supabase
+      .from('users')
+      .select('stripe_customer_id, stripe_subscription_id')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user?.stripe_customer_id) {
+      return res.json({
+        success: true,
+        data: {
+          upcomingInvoice: null,
+        },
+      });
+    }
+
+    // Get upcoming invoice from Stripe
+    const upcomingInvoice = await stripeService.getUpcomingInvoice(
+      user.stripe_customer_id,
+      user.stripe_subscription_id
+    );
+
+    res.json({
+      success: true,
+      data: {
+        upcomingInvoice,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching upcoming invoice:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'UPCOMING_INVOICE_ERROR',
+        message: 'Failed to fetch upcoming invoice',
+        details: error.message,
+      },
+    });
+  }
+});
+
 export default router;

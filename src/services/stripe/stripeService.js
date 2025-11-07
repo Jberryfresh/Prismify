@@ -465,6 +465,145 @@ export async function handleSubscriptionDeleted(subscription) {
   }
 }
 
+/**
+ * List invoices for a customer
+ *
+ * @param {string} customerId - Stripe customer ID
+ * @param {number} limit - Number of invoices to retrieve (default: 10, max: 100)
+ * @returns {Promise<Object>} - Invoice list
+ */
+export async function listInvoices(customerId, limit = 10) {
+  try {
+    const invoices = await stripe.invoices.list({
+      customer: customerId,
+      limit: Math.min(limit, 100),
+    });
+
+    return {
+      invoices: invoices.data.map((invoice) => ({
+        id: invoice.id,
+        number: invoice.number,
+        status: invoice.status,
+        amount: invoice.amount_due,
+        currency: invoice.currency,
+        created: new Date(invoice.created * 1000).toISOString(),
+        dueDate: invoice.due_date ? new Date(invoice.due_date * 1000).toISOString() : null,
+        paidAt: invoice.status_transitions.paid_at
+          ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
+          : null,
+        hostedInvoiceUrl: invoice.hosted_invoice_url,
+        invoicePdf: invoice.invoice_pdf,
+        periodStart: new Date(invoice.period_start * 1000).toISOString(),
+        periodEnd: new Date(invoice.period_end * 1000).toISOString(),
+      })),
+      hasMore: invoices.has_more,
+    };
+  } catch (error) {
+    console.error('Error listing invoices:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get a specific invoice
+ *
+ * @param {string} invoiceId - Stripe invoice ID
+ * @returns {Promise<Object>} - Invoice details
+ */
+export async function getInvoice(invoiceId) {
+  try {
+    const invoice = await stripe.invoices.retrieve(invoiceId);
+
+    return {
+      id: invoice.id,
+      number: invoice.number,
+      status: invoice.status,
+      amount: invoice.amount_due,
+      amountPaid: invoice.amount_paid,
+      amountRemaining: invoice.amount_remaining,
+      currency: invoice.currency,
+      created: new Date(invoice.created * 1000).toISOString(),
+      dueDate: invoice.due_date ? new Date(invoice.due_date * 1000).toISOString() : null,
+      paidAt: invoice.status_transitions.paid_at
+        ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
+        : null,
+      hostedInvoiceUrl: invoice.hosted_invoice_url,
+      invoicePdf: invoice.invoice_pdf,
+      periodStart: new Date(invoice.period_start * 1000).toISOString(),
+      periodEnd: new Date(invoice.period_end * 1000).toISOString(),
+      lines: invoice.lines.data.map((line) => ({
+        id: line.id,
+        description: line.description,
+        amount: line.amount,
+        quantity: line.quantity,
+        price: line.price?.unit_amount,
+      })),
+    };
+  } catch (error) {
+    console.error('Error retrieving invoice:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get upcoming invoice for a subscription
+ *
+ * @param {string} customerId - Stripe customer ID
+ * @param {string} subscriptionId - Stripe subscription ID (optional)
+ * @returns {Promise<Object|null>} - Upcoming invoice preview or null
+ */
+export async function getUpcomingInvoice(customerId, subscriptionId = null) {
+  try {
+    const params = { customer: customerId };
+    if (subscriptionId) {
+      params.subscription = subscriptionId;
+    }
+
+    const invoice = await stripe.invoices.retrieveUpcoming(params);
+
+    return {
+      amount: invoice.amount_due,
+      currency: invoice.currency,
+      periodStart: new Date(invoice.period_start * 1000).toISOString(),
+      periodEnd: new Date(invoice.period_end * 1000).toISOString(),
+      lines: invoice.lines.data.map((line) => ({
+        description: line.description,
+        amount: line.amount,
+        quantity: line.quantity,
+      })),
+    };
+  } catch (error) {
+    // No upcoming invoice (e.g., canceled subscription)
+    if (error.code === 'invoice_upcoming_none') {
+      return null;
+    }
+    console.error('Error retrieving upcoming invoice:', error);
+    throw error;
+  }
+}
+
+/**
+ * Download invoice PDF
+ * Returns the PDF URL from Stripe
+ *
+ * @param {string} invoiceId - Stripe invoice ID
+ * @returns {Promise<string>} - PDF URL
+ */
+export async function downloadInvoicePDF(invoiceId) {
+  try {
+    const invoice = await stripe.invoices.retrieve(invoiceId);
+
+    if (!invoice.invoice_pdf) {
+      throw new Error('Invoice PDF not available');
+    }
+
+    return invoice.invoice_pdf;
+  } catch (error) {
+    console.error('Error downloading invoice PDF:', error);
+    throw error;
+  }
+}
+
 export default {
   createOrGetCustomer,
   createCheckoutSession,
@@ -478,5 +617,9 @@ export default {
   getTierQuotas,
   syncSubscriptionToDatabase,
   handleSubscriptionDeleted,
+  listInvoices,
+  getInvoice,
+  getUpcomingInvoice,
+  downloadInvoicePDF,
   stripe, // Export stripe instance for advanced usage
 };
