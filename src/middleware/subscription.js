@@ -5,6 +5,7 @@
  * Integrates with Supabase users table to check subscription_tier column.
  *
  * Subscription Tiers:
+ * - free: No subscription - 1 audit/month, 10 keywords/month
  * - starter: $49/month - 10 audits/month, 50 keywords/month
  * - professional: $149/month - 50 audits/month, 500 keywords/month
  * - agency: $499/month - Unlimited audits and keywords
@@ -22,6 +23,7 @@
  */
 
 import { createClient } from '../config/supabase.js';
+import usageTracker from '../services/usageTracker.js';
 
 /**
  * Subscription tier hierarchy
@@ -243,51 +245,33 @@ export function checkQuota(resourceType) {
         });
       }
 
-      // Get user's subscription
-      const subscription = await getUserSubscription(req.user.id);
+      // Use usageTracker service to check quota
+      const quotaCheck = await usageTracker.checkQuota(req.user.id, resourceType);
 
-      // Agency tier has unlimited quota
-      if (subscription.tier === 'agency') {
-        req.subscription = subscription;
-        return next();
-      }
-
-      // Get quota limit for user's tier
-      const quotaLimit = TIER_QUOTAS[subscription.tier][resourceType];
-      if (quotaLimit === undefined) {
-        return res.status(500).json({
-          success: false,
-          error: {
-            code: 'INVALID_RESOURCE_TYPE',
-            message: `Unknown resource type: ${resourceType}`,
-          },
-        });
-      }
-
-      // Get current usage
-      const currentUsage = await getCurrentUsage(req.user.id, resourceType);
-
-      // Check if quota exceeded
-      if (currentUsage >= quotaLimit) {
+      // Check if action is allowed
+      if (!quotaCheck.allowed) {
         return res.status(429).json({
           success: false,
           error: {
             code: 'QUOTA_EXCEEDED',
-            message: `You've reached your monthly limit of ${quotaLimit} ${resourceType}. Upgrade your plan for more.`,
-            current_usage: currentUsage,
-            quota_limit: quotaLimit,
+            message: `You've reached your monthly limit for ${resourceType}. Upgrade your plan for more.`,
+            current_tier: quotaCheck.tier,
+            current_usage: quotaCheck.usage,
+            quota_limits: quotaCheck.quotas,
+            reset_date: quotaCheck.resetDate,
             upgrade_url: '/pricing',
           },
         });
       }
 
-      // Attach subscription and usage info to request
-      req.subscription = subscription;
+      // Attach quota info to request for downstream use
       req.quota = {
         type: resourceType,
-        limit: quotaLimit,
-        used: currentUsage,
-        remaining: quotaLimit - currentUsage,
+        tier: quotaCheck.tier,
+        usage: quotaCheck.usage,
+        quotas: quotaCheck.quotas,
+        remaining: quotaCheck.remaining,
+        resetDate: quotaCheck.resetDate,
       };
 
       next();
@@ -297,7 +281,7 @@ export function checkQuota(resourceType) {
         success: false,
         error: {
           code: 'QUOTA_CHECK_FAILED',
-          message: 'Failed to verify quota',
+          message: 'Failed to check usage quota',
         },
       });
     }

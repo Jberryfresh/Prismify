@@ -12,6 +12,7 @@
     "test:db": "node scripts/test-database.js",
     "test:auth": "node tests/auth.test.js",
     "test:subscription": "node tests/subscription.test.js",
+    "test:stripe": "node tests/stripe.test.js",
     "lint": "eslint . --ext .js",
     "lint:fix": "eslint . --ext .js --fix",
     "format": "prettier --write \"**/*.{js,json,md,yml,yaml}\"",
@@ -41,7 +42,8 @@
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.80.0",
     "dotenv": "^17.2.3",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "stripe": "^19.3.0"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -220,7 +220,11 @@ StartedAt: 2025-11-07
 
 ## 2.2 Subscription & Billing (🔴 P0-CRITICAL)
 
-- [ ] 2.2.1 Stripe subscription integration (🔴 P0-CRITICAL)
+Branch: phase-2.2-stripe-billing
+StartedBy: GitHub Copilot
+StartedAt: 2025-11-07
+
+- [🔲] 2.2.1 Stripe subscription integration (🔴 P0-CRITICAL)
   - Acceptance: Create Stripe customers, subscribe to plans ($49/$149/$499), webhook handlers work
   - Files: `src/services/stripe/*`, `src/routes/billing.js`, `src/routes/webhooks/stripe.js`
   - Tests: Mock Stripe webhooks, test subscription lifecycle
