@@ -47,11 +47,11 @@ async function testSEOAgent() {
     });
 
     console.log('✅ Analysis Results:');
-    console.log(`   Overall Score: ${analysis.overallScore}/100`);
+    console.log(`   Overall Score: ${Math.round(analysis.overallScore * 100)}/100`);
     console.log(`   Grade: ${analysis.grade}`);
-    console.log(`   Title Score: ${analysis.title.score}/100`);
-    console.log(`   Content Score: ${analysis.content.score}/100`);
-    console.log(`   Readability: ${analysis.readability.score}/100`);
+    console.log(`   Title Score: ${Math.round(analysis.title.score * 100)}/100`);
+    console.log(`   Content Score: ${Math.round(analysis.content.score * 100)}/100`);
+    console.log(`   Readability: ${Math.round(analysis.readability.score * 100)}/100`);
 
     // Test 2: Generate Meta Tags (AI-powered)
     console.log('\n🏷️  Test 2: Generate Meta Tags (AI)');
@@ -95,7 +95,7 @@ async function testSEOAgent() {
     });
 
     console.log('✅ Optimization Complete:');
-    console.log(`   SEO Score: ${optimized.seoScore}/100`);
+    console.log(`   SEO Score: ${Math.round(optimized.seoScore * 100)}/100`);
     console.log(`   Recommendations: ${optimized.recommendations.length} items`);
     console.log('\n   Top 3 Recommendations:');
     optimized.recommendations.slice(0, 3).forEach((rec, i) => {
