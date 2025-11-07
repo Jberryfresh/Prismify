@@ -51,10 +51,10 @@ class Agent extends EventEmitter {
    * Execute a task
    * Must be implemented by subclasses
    * @abstract
-   * @param {Object} task - Task object containing task data
+   * @param {Object} _task - Task object containing task data
    * @returns {Promise<Object>} Task result
    */
-  async execute(task) {
+  async execute(_task) {
     throw new Error('execute() must be implemented by subclass');
   }
 

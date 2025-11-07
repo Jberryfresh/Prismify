@@ -60,7 +60,7 @@ async function runMigration() {
       .rpc('exec_sql', {
         query: migrationSQL,
       })
-      .catch(async (err) => {
+      .catch(async (_err) => {
         // If exec_sql function doesn't exist, we need to run it directly
         // This requires using the Postgres connection
         console.log('   Using direct SQL execution...');
