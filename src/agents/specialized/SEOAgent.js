@@ -207,7 +207,7 @@ Generate meta tags in JSON format:
 
       try {
         metaTags = JSON.parse(metaText);
-      } catch (e) {
+      } catch {
         // Fallback to basic meta tags if AI response isn't valid JSON
         console.warn('[SEO] Failed to parse AI response, using fallback meta tags');
         metaTags = {
@@ -277,7 +277,7 @@ Provide keywords in JSON format:
 
       try {
         suggestions = JSON.parse(keywordText);
-      } catch (e) {
+      } catch {
         // Extract keywords from content if parsing fails
         suggestions = {
           keywords: this.extractTopWords(content, 5),
@@ -287,7 +287,7 @@ Provide keywords in JSON format:
       }
 
       return suggestions;
-    } catch (error) {
+    } catch {
       // Fallback to simple extraction
       return {
         keywords: this.extractTopWords(content, 5),
@@ -352,7 +352,7 @@ Provide keywords in JSON format:
   /**
    * Analyze content for SEO
    */
-  analyzeContentSEO(content, keywords) {
+  analyzeContentSEO(content, _keywords) {
     const wordCount = content ? content.split(/\s+/).length : 0;
     const charCount = content ? content.length : 0;
     const paragraphCount = content ? content.split(/\n\n/).filter((p) => p.trim()).length : 0;
@@ -523,7 +523,7 @@ Provide keywords in JSON format:
   /**
    * Generate optimization recommendations
    */
-  generateRecommendations(analysis, metaTags) {
+  generateRecommendations(analysis, _metaTags) {
     const recommendations = [];
 
     // Title recommendations

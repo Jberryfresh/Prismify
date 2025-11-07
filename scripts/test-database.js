@@ -31,7 +31,7 @@ async function testSupabaseConnection() {
 
     // Test connection by querying database
     console.log('\n🔌 Testing database connection...');
-    const { data, error } = await supabase.from('users').select('count').limit(1);
+    const { error } = await supabase.from('users').select('count').limit(1);
 
     if (error) {
       // If table doesn't exist yet, that's okay - connection works!
@@ -64,7 +64,7 @@ async function testDatabaseInfo() {
 
   try {
     // Try to get list of tables
-    const { data: tables, error } = await supabase
+    await supabase
       .rpc('get_tables')
       .catch(() => ({ data: null, error: { message: 'Custom function not available' } }));
 
@@ -82,7 +82,7 @@ async function testDatabaseInfo() {
     if (healthCheck !== null) {
       console.log('\n✓ Database is healthy and tables exist!');
     }
-  } catch (error) {
+  } catch {
     // Silent fail - just showing basic info
     console.log('\n  (Run SQL schema to create tables)');
   }

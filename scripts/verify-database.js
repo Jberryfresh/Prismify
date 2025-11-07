@@ -28,7 +28,6 @@ async function verifyTables() {
   console.log('📊 Checking tables...\n');
 
   let successCount = 0;
-  let failCount = 0;
 
   for (const table of tables) {
     try {
@@ -38,14 +37,12 @@ async function verifyTables() {
 
       if (error) {
         console.log(`   ❌ ${table.padEnd(20)} - Error: ${error.message}`);
-        failCount++;
       } else {
         console.log(`   ✅ ${table.padEnd(20)} - EXISTS (${count || 0} rows)`);
         successCount++;
       }
     } catch (error) {
       console.log(`   ❌ ${table.padEnd(20)} - Error: ${error.message}`);
-      failCount++;
     }
   }
 
