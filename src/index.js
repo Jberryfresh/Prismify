@@ -18,6 +18,8 @@ import userRoutes from './routes/users.js';
 import billingRoutes from './routes/billing.js';
 import subscriptionRoutes from './routes/subscriptions.js';
 import auditRoutes from './routes/audits.js';
+import keywordRoutes from './routes/keywords.js';
+import reportRoutes from './routes/reports.js';
 
 // Initialize Express app
 const app = express();
@@ -71,6 +73,8 @@ app.use('/api/user', userRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/audits', auditRoutes);
+app.use('/api/keywords', keywordRoutes);
+app.use('/api/reports', reportRoutes);
 
 // 404 handler
 app.use((_req, res) => {

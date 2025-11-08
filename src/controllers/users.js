@@ -251,7 +251,8 @@ export async function deleteUser(req, res) {
           },
         });
       }
-    } catch (authError) {
+    // eslint-disable-next-line no-unused-vars
+    } catch (_authError) {
       return res.status(401).json({
         success: false,
         error: {

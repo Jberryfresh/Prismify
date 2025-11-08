@@ -3,8 +3,8 @@
  * Tests for user CRUD operations and data export
  */
 
-const { describe, it, before } = require('node:test');
-const assert = require('node:assert');
+import { describe, it, before } from 'node:test';
+import assert from 'node:assert';
 
 // Mock Supabase client
 const mockSupabase = {
