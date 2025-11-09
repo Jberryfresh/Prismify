@@ -1,7 +1,7 @@
 /**
  * User Profile Routes
  * Handles user profile management including retrieval, updates, and deletion
- * 
+ *
  * Routes:
  * - GET /api/user - Get current user profile
  * - PATCH /api/user - Update user profile

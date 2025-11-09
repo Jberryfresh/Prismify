@@ -108,7 +108,7 @@ export async function updateUser(req, res) {
           },
         });
       }
-      
+
       // Check if email is already taken
       const { data: existingUser } = await supabase
         .from('users')
@@ -223,11 +223,7 @@ export async function deleteUser(req, res) {
     }
 
     // Verify password
-    const { data: user } = await supabase
-      .from('users')
-      .select('email')
-      .eq('id', userId)
-      .single();
+    const { data: user } = await supabase.from('users').select('email').eq('id', userId).single();
 
     if (!user) {
       return res.status(404).json({
@@ -251,7 +247,7 @@ export async function deleteUser(req, res) {
           },
         });
       }
-    // eslint-disable-next-line no-unused-vars
+      // eslint-disable-next-line no-unused-vars
     } catch (_authError) {
       return res.status(401).json({
         success: false,
@@ -339,11 +335,7 @@ export async function exportUserData(req, res) {
     const userId = req.user.id;
 
     // Get user profile
-    const { data: user } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
+    const { data: user } = await supabase.from('users').select('*').eq('id', userId).single();
 
     // Get API keys (hashed, not actual keys)
     const { data: apiKeys } = await supabase
@@ -364,16 +356,10 @@ export async function exportUserData(req, res) {
       .eq('user_id', userId);
 
     // Get meta tags
-    const { data: metaTags } = await supabase
-      .from('meta_tags')
-      .select('*')
-      .eq('user_id', userId);
+    const { data: metaTags } = await supabase.from('meta_tags').select('*').eq('user_id', userId);
 
     // Get API usage
-    const { data: apiUsage } = await supabase
-      .from('api_usage')
-      .select('*')
-      .eq('user_id', userId);
+    const { data: apiUsage } = await supabase.from('api_usage').select('*').eq('user_id', userId);
 
     // Get subscription history
     const { data: subscriptions } = await supabase
@@ -394,7 +380,10 @@ export async function exportUserData(req, res) {
 
     // Set headers for file download
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', `attachment; filename="prismify-data-export-${userId}-${Date.now()}.json"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="prismify-data-export-${userId}-${Date.now()}.json"`
+    );
 
     return res.json(exportData);
   } catch (error) {

@@ -255,6 +255,56 @@ export async function resetMonthlyUsage() {
   // No-op: We use timestamp-based queries, so no manual reset needed
 }
 
+/**
+ * Increment usage counter (for keyword research and other tracked actions)
+ * This records usage in api_usage table for quota tracking
+ *
+ * @param {string} userId - User ID
+ * @param {string} action - Action type (keywords, audits, etc.)
+ * @param {number} count - Number to increment by (default: 1)
+ * @returns {Promise<void>}
+ */
+export async function incrementUsage(userId, action, count = 1) {
+  try {
+    // Map action to endpoint for api_usage tracking
+    const endpointMap = {
+      keywords: '/api/keywords/research',
+      keyword_research: '/api/keywords/research',
+      audits: '/api/audits',
+      audit: '/api/audits',
+    };
+
+    const endpoint = endpointMap[action] || `/api/${action}`;
+
+    // Insert usage record(s)
+    for (let i = 0; i < count; i++) {
+      await supabase.from('api_usage').insert({
+        user_id: userId,
+        endpoint,
+        method: 'POST',
+        response_time: 0,
+        status_code: 201,
+        created_at: new Date().toISOString(),
+      });
+    }
+  } catch (error) {
+    console.error('Error incrementing usage:', error);
+    // Don't throw - we don't want to fail the request if tracking fails
+  }
+}
+
+/**
+ * Log usage (alias for incrementUsage for backward compatibility)
+ *
+ * @param {string} userId - User ID
+ * @param {string} action - Action type
+ * @param {Object} _metadata - Additional metadata (ignored for now)
+ * @returns {Promise<void>}
+ */
+export async function logUsage(userId, action, _metadata = {}) {
+  return incrementUsage(userId, action, 1);
+}
+
 export default {
   getUserTierAndQuotas,
   getCurrentMonthUsage,
@@ -262,4 +312,6 @@ export default {
   trackApiUsage,
   getUsageStats,
   resetMonthlyUsage,
+  incrementUsage,
+  logUsage,
 };

@@ -6,10 +6,7 @@
 import { createClient } from '@supabase/supabase-js';
 import * as usageTracker from '../services/usageTracker.js';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 /**
  * Research keywords for a seed keyword/topic
@@ -42,9 +39,7 @@ export async function researchKeywords(req, res) {
     }
 
     // Check for existing research within 7 days (cache)
-    const sevenDaysAgo = new Date(
-      Date.now() - 7 * 24 * 60 * 60 * 1000
-    ).toISOString();
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
     const { data: cachedResults } = await supabase
       .from('keywords')
@@ -78,10 +73,7 @@ export async function researchKeywords(req, res) {
     // PLACEHOLDER: Google Keyword Planner API integration (Phase 3)
     // For now, return mock data with realistic structure
     // In Phase 3, integrate with: https://developers.google.com/google-ads/api/docs/keyword-planning
-    const mockKeywordData = generateMockKeywordData(
-      seed_keyword,
-      target_location
-    );
+    const mockKeywordData = generateMockKeywordData(seed_keyword, target_location);
 
     // Store keywords in database
     const keywordsToInsert = mockKeywordData.map((kw) => ({
@@ -298,18 +290,14 @@ function generateMockKeywordData(seedKeyword, _location = 'US') {
 
   return variations.map((keyword) => {
     const searchVolume = Math.floor(Math.random() * 5000) + 100;
-    const competitionLevel =
-      ['low', 'medium', 'high'][Math.floor(Math.random() * 3)];
+    const competitionLevel = ['low', 'medium', 'high'][Math.floor(Math.random() * 3)];
     const difficultyScore = Math.floor(Math.random() * 100);
 
     // Calculate opportunity score (high volume + low competition = high opportunity)
     const volumeScore = Math.min(searchVolume / 50, 100);
     const competitionPenalty =
       competitionLevel === 'low' ? 0 : competitionLevel === 'medium' ? 20 : 40;
-    const opportunityScore = Math.max(
-      0,
-      Math.min(100, volumeScore - competitionPenalty)
-    );
+    const opportunityScore = Math.max(0, Math.min(100, volumeScore - competitionPenalty));
 
     return {
       keyword,

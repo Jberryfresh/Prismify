@@ -5,10 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 /**
  * Generate PDF report for an audit
@@ -87,8 +84,7 @@ export async function generatePDF(req, res) {
       success: true,
       data: {
         ...mockPDFData,
-        message:
-          'PDF generation placeholder. Real implementation in Phase 3 with jsPDF.',
+        message: 'PDF generation placeholder. Real implementation in Phase 3 with jsPDF.',
       },
     });
   } catch (error) {
@@ -275,8 +271,7 @@ function generateCSVContent(audit, keywords) {
   // Keywords Section
   if (keywords && keywords.length > 0) {
     csv += 'KEYWORDS\n';
-    csv +=
-      'Keyword,Search Volume,Competition,Difficulty Score,Opportunity Score,CPC\n';
+    csv += 'Keyword,Search Volume,Competition,Difficulty Score,Opportunity Score,CPC\n';
 
     keywords.forEach((kw) => {
       csv += `"${escapeCSV(kw.keyword)}",${kw.search_volume || 0},${kw.competition || 'N/A'},${kw.difficulty_score || 0},${kw.opportunity_score || 0},${kw.cpc || 0}\n`;

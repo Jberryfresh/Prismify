@@ -15,12 +15,7 @@ const router = express.Router();
  * Research keywords for a topic/seed keyword
  * Rate limited by subscription tier
  */
-router.post(
-  '/research',
-  requireAuth,
-  checkQuota('keyword_research'),
-  keywordsController.researchKeywords
-);
+router.post('/research', requireAuth, checkQuota('keywords'), keywordsController.researchKeywords);
 
 /**
  * GET /api/keywords/:audit_id
@@ -32,10 +27,6 @@ router.get('/:audit_id', requireAuth, keywordsController.getKeywordsByAudit);
  * GET /api/keywords/:audit_id/opportunities
  * Get highest opportunity keywords for an audit
  */
-router.get(
-  '/:audit_id/opportunities',
-  requireAuth,
-  keywordsController.getTopOpportunities
-);
+router.get('/:audit_id/opportunities', requireAuth, keywordsController.getTopOpportunities);
 
 export default router;

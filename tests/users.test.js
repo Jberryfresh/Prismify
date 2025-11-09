@@ -45,7 +45,7 @@ describe('User Profile Routes', () => {
       full_name: 'Test User',
       subscription_tier: 'starter',
     };
-    
+
     // Would call API endpoint here with authenticated request
     assert.ok(mockUser.id);
   });
@@ -55,7 +55,7 @@ describe('User Profile Routes', () => {
     const updates = {
       full_name: 'Updated Name',
     };
-    
+
     // Would call API endpoint here
     assert.ok(updates.full_name);
   });
@@ -64,7 +64,7 @@ describe('User Profile Routes', () => {
     // Test email validation
     const invalidEmail = 'not-an-email';
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
+
     assert.strictEqual(emailRegex.test(invalidEmail), false);
   });
 
@@ -73,7 +73,7 @@ describe('User Profile Routes', () => {
     const deleteRequest = {
       password: 'test-password',
     };
-    
+
     // Would call API endpoint here
     assert.ok(deleteRequest.password);
   });
@@ -87,7 +87,7 @@ describe('User Profile Routes', () => {
       projects: [],
       analyses: [],
     };
-    
+
     // Would call API endpoint here
     assert.ok(exportData.export_date);
     assert.ok(Array.isArray(exportData.api_keys));

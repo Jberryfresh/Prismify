@@ -1,7 +1,7 @@
 /**
  * SEO Audit Routes
  * Core product feature - handles SEO audits, analysis, and recommendations
- * 
+ *
  * Routes:
  * - POST /api/audits - Create new SEO audit
  * - GET /api/audits/:id - Get audit results
@@ -23,17 +23,13 @@ router.use(requireAuth);
  * POST /api/audits
  * Create new SEO audit
  * Body: { url: string, options?: { includeKeywords?: boolean, depth?: number } }
- * 
+ *
  * Quota limits:
  * - Starter: 10 audits/month
  * - Professional: 50 audits/month
  * - Agency: unlimited
  */
-router.post(
-  '/',
-  checkQuota('audits'),
-  auditsController.createAudit
-);
+router.post('/', checkQuota('audits'), auditsController.createAudit);
 
 /**
  * GET /api/audits/:id
