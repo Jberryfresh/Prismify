@@ -293,7 +293,7 @@ Summary: Complete REST API infrastructure with user profile management, SEO audi
   - CompletedBy: GitHub Copilot
   - CompletedAt: 2025-11-07 22:00 UTC
   - Notes: Implemented 3 endpoints: POST /api/keywords/research (seed keyword analysis with 7-day caching), GET /api/keywords/:audit_id (retrieve by audit), GET /api/keywords/:audit_id/opportunities (top opportunities by score). Returns search volume, competition level, difficulty score, opportunity score (calculated: high volume + low competition), CPC. Mock data for now - placeholder for Google Keyword Planner API integration in Phase 3.
-- [✓] 2.3.4 Report generation endpoints (� P2-MEDIUM)
+- [✓] 2.3.4 Report generation endpoints (🟡 P2-MEDIUM)
   - Acceptance: POST /api/reports/pdf, POST /api/reports/csv (export audit data)
   - Files: `src/routes/reports.js`, `src/controllers/reports.js`
   - CompletedBy: GitHub Copilot
