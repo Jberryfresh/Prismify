@@ -66,10 +66,25 @@ class AICostTracker {
         return true;
       }
 
-      this.redis = createClient({
+      const redisOptions = {
         url: config.redis.url,
-        password: config.redis.password,
-      });
+        socket: {
+          connectTimeout: 5000,
+          reconnectStrategy: (retries) => {
+            if (retries > 10) {
+              return new Error('Redis reconnect attempts exceeded');
+            }
+            return Math.min(retries * 100, 3000);
+          },
+        },
+      };
+
+      // Only add password if it's configured
+      if (config.redis.password) {
+        redisOptions.password = config.redis.password;
+      }
+
+      this.redis = createClient(redisOptions);
 
       await this.redis.connect();
       this.isConnected = true;

@@ -56,9 +56,8 @@ class AICacheService {
         return true;
       }
 
-      this.client = createClient({
+      const redisOptions = {
         url: config.redis.url,
-        password: config.redis.password,
         socket: {
           connectTimeout: 5000,
           reconnectStrategy: (retries) => {
@@ -68,7 +67,14 @@ class AICacheService {
             return Math.min(retries * 100, 3000);
           },
         },
-      });
+      };
+
+      // Only add password if it's configured
+      if (config.redis.password) {
+        redisOptions.password = config.redis.password;
+      }
+
+      this.client = createClient(redisOptions);
 
       this.client.on('error', (err) => {
         console.error('❌ Redis Client Error:', err.message);
