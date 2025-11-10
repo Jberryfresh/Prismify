@@ -13,6 +13,7 @@
     "test:auth": "node tests/auth.test.js",
     "test:subscription": "node tests/subscription.test.js",
     "test:stripe": "node tests/stripe.test.js",
+    "test:ai": "node scripts/test-ai-integration.js",
     "lint": "eslint . --ext .js",
     "lint:fix": "eslint . --ext .js --fix",
     "format": "prettier --write \"**/*.{js,json,md,yml,yaml}\"",
