@@ -11,6 +11,8 @@
 import config from '../../config/index.js';
 import geminiService from './geminiService.js';
 import claudeService from './claudeService.js';
+import aiCacheService from '../cache/aiCache.js';
+import aiCostTracker from '../analytics/aiCostTracker.js';
 
 class UnifiedAIService {
   constructor() {
@@ -21,13 +23,15 @@ class UnifiedAIService {
     };
 
     this.preferredProvider = config.ai.preferredProvider || 'gemini';
-    this.fallbackOrder = ['gemini', 'anthropic', 'openai'];
+    // Fallback order: Gemini (primary, free) → Claude (fallback, paid when available)
+    this.fallbackOrder = ['gemini', 'anthropic'];
     this.providerStatus = {};
     this.stats = {
       totalRequests: 0,
       providerUsage: {},
       failedRequests: 0,
       fallbacksUsed: 0,
+      lastError: null,
     };
   }
 
@@ -37,14 +41,18 @@ class UnifiedAIService {
   async initialize() {
     const results = {};
 
-    // Initialize Gemini (free tier)
+    // Initialize cache service and cost tracker
+    await aiCacheService.initialize();
+    await aiCostTracker.initialize();
+
+    // Initialize Gemini (free tier - currently working)
     if (config.ai.gemini.apiKey) {
       try {
         const success = await geminiService.initialize();
         results.gemini = success ? 'available' : 'unavailable';
         this.providerStatus.gemini = success;
       } catch (error) {
-        console.warn('Gemini initialization failed:', error.message);
+        console.warn('⚠️  Gemini initialization failed:', error.message);
         results.gemini = 'unavailable';
         this.providerStatus.gemini = false;
       }
@@ -53,14 +61,15 @@ class UnifiedAIService {
       this.providerStatus.gemini = false;
     }
 
-    // Initialize Claude (paid)
+    // Initialize Claude (paid - fallback when Anthropic subscription active)
     if (config.ai.anthropic.apiKey) {
       try {
-        const success = await claudeService.initialize();
-        results.anthropic = success ? 'available' : 'unavailable';
-        this.providerStatus.anthropic = success;
+        // Note: Claude service doesn't have initialize method, so we check healthCheck
+        const isHealthy = await claudeService.healthCheck();
+        results.anthropic = isHealthy ? 'available' : 'unavailable';
+        this.providerStatus.anthropic = isHealthy;
       } catch (error) {
-        console.warn('Claude initialization failed:', error.message);
+        console.warn('⚠️  Claude initialization failed:', error.message);
         results.anthropic = 'unavailable';
         this.providerStatus.anthropic = false;
       }
@@ -71,11 +80,17 @@ class UnifiedAIService {
 
     // Log initialization results
     console.log('\n🤖 AI Services Status:');
-    console.log(`   Gemini (Free):  ${this.getStatusEmoji(results.gemini)} ${results.gemini}`);
+    console.log(`   Gemini (Primary): ${this.getStatusEmoji(results.gemini)} ${results.gemini}`);
     console.log(
-      `   Claude (Paid):  ${this.getStatusEmoji(results.anthropic)} ${results.anthropic}`
+      `   Claude (Fallback): ${this.getStatusEmoji(results.anthropic)} ${results.anthropic}`
     );
-    console.log(`   Preferred:      ${this.preferredProvider}\n`);
+    console.log(`   Preferred: ${this.preferredProvider}`);
+
+    // Warn if no providers available
+    if (!this.isAvailable()) {
+      console.error('❌ WARNING: No AI providers are available! Please configure API keys.');
+    }
+    console.log('');
 
     return results;
   }
@@ -121,10 +136,34 @@ class UnifiedAIService {
   }
 
   /**
-   * Execute with automatic fallback
+   * Execute with automatic fallback and caching
+   * @param {string} method - Method name to call on AI provider
+   * @param {Object} params - Parameters to pass to method
+   * @param {Object} cacheOptions - Cache configuration
+   * @param {string} cacheOptions.type - Cache type (metaTags, keywords, seoRecommendations, contentAnalysis)
+   * @param {boolean} cacheOptions.enabled - Enable caching (default: true)
+   * @param {number} cacheOptions.ttl - Custom TTL in seconds (optional)
    */
-  async executeWithFallback(method, params) {
+  async executeWithFallback(method, params, cacheOptions = {}) {
+    const {
+      type: cacheType = 'general',
+      enabled: cacheEnabled = true,
+      ttl: customTTL = null,
+    } = cacheOptions;
     const errors = [];
+    const startTime = Date.now();
+
+    // Try cache first if enabled
+    if (cacheEnabled) {
+      const cached = await aiCacheService.get(cacheType, { method, ...params });
+      if (cached) {
+        return {
+          ...cached.data,
+          fromCache: true,
+          cached_at: cached.cached_at,
+        };
+      }
+    }
 
     // Try each provider in order
     for (const providerName of this.fallbackOrder) {
@@ -133,25 +172,79 @@ class UnifiedAIService {
       }
 
       const provider = this.providers[providerName];
-      if (!provider || !provider.isAvailable()) {
+      if (!provider) {
+        continue;
+      }
+
+      // Check if provider is available (for Gemini which has isAvailable method)
+      if (provider.isAvailable && !provider.isAvailable()) {
+        errors.push({ provider: providerName, error: 'Provider not initialized' });
+        continue;
+      }
+
+      // Check if provider supports the requested method
+      if (typeof provider[method] !== 'function') {
+        errors.push({
+          provider: providerName,
+          error: `Method '${method}' not supported by this provider`,
+        });
+        console.log(`⚠️  ${providerName} does not support ${method}, skipping...`);
         continue;
       }
 
       try {
+        console.log(`🤖 Attempting ${method} with ${providerName}...`);
         const result = await provider[method](params);
 
         // Track success
         this.stats.totalRequests++;
         this.stats.providerUsage[providerName] = (this.stats.providerUsage[providerName] || 0) + 1;
 
-        return {
+        const duration = Date.now() - startTime;
+        const usedFallback = providerName !== this.preferredProvider;
+
+        if (usedFallback) {
+          this.stats.fallbacksUsed++;
+          console.log(`✅ Fallback successful: ${providerName} (${duration}ms)`);
+        } else {
+          console.log(`✅ Request successful: ${providerName} (${duration}ms)`);
+        }
+
+        const response = {
           ...result,
           provider: providerName,
-          fallbackUsed: providerName !== this.preferredProvider,
+          fallbackUsed: usedFallback,
+          duration,
+          fromCache: false,
         };
+
+        // Track cost (extract token usage from result)
+        if (result.usage || result.metadata) {
+          const usage = result.usage || result.metadata;
+          await aiCostTracker.trackRequest({
+            provider: providerName,
+            model: result.model || config.ai[providerName]?.model || 'unknown',
+            inputTokens: usage.inputTokens || usage.input_tokens || 0,
+            outputTokens: usage.outputTokens || usage.output_tokens || 0,
+            method,
+          });
+        } else {
+          console.warn(
+            `⚠️  No usage data returned by ${providerName} for ${method} - cost tracking may be inaccurate`
+          );
+        }
+
+        // Cache the result if enabled
+        if (cacheEnabled) {
+          await aiCacheService.set(cacheType, { method, ...params }, response, customTTL);
+        }
+
+        return response;
       } catch (error) {
         errors.push({ provider: providerName, error: error.message });
-        console.warn(`${providerName} failed, trying next provider:`, error.message);
+        console.warn(`❌ ${providerName} failed:`, error.message);
+
+        // Continue to next provider
         continue;
       }
     }
@@ -159,56 +252,79 @@ class UnifiedAIService {
     // All providers failed
     this.stats.failedRequests++;
     const errorMsg = errors.map((e) => `${e.provider}: ${e.error}`).join('; ');
-    throw new Error(`All AI providers failed: ${errorMsg}`);
+    this.stats.lastError = errorMsg;
+
+    throw new Error(`All AI providers failed for ${method}: ${errorMsg}`);
   }
 
   /**
-   * Generate article content
+   * Generate article content (with caching)
    */
   async generateArticle(params) {
-    return this.executeWithFallback('generateArticle', params);
+    return this.executeWithFallback('generateArticle', params, {
+      type: 'contentAnalysis',
+      enabled: true,
+    });
   }
 
   /**
-   * Generate text from prompt (general purpose)
+   * Generate text from prompt (general purpose, with caching)
    */
   async generate(params) {
-    return this.executeWithFallback('generate', params);
+    return this.executeWithFallback('generate', params, {
+      type: 'general',
+      enabled: true,
+    });
   }
 
   /**
-   * Rewrite article content
+   * Rewrite article content (with caching)
    */
   async rewriteArticle(params) {
-    return this.executeWithFallback('rewriteArticle', params);
+    return this.executeWithFallback('rewriteArticle', params, {
+      type: 'contentAnalysis',
+      enabled: true,
+    });
   }
 
   /**
-   * Generate headlines
+   * Generate headlines (with caching)
    */
   async generateHeadlines(params) {
-    return this.executeWithFallback('generateHeadlines', params);
+    return this.executeWithFallback('generateHeadlines', params, {
+      type: 'metaTags',
+      enabled: true,
+    });
   }
 
   /**
-   * Check content consistency
+   * Check content consistency (with caching)
    */
   async checkConsistency(params) {
-    return this.executeWithFallback('checkConsistency', params);
+    return this.executeWithFallback('checkConsistency', params, {
+      type: 'contentAnalysis',
+      enabled: true,
+    });
   }
 
   /**
-   * Suggest multimedia content
+   * Suggest multimedia content (with caching)
    */
   async suggestMultimedia(params) {
-    return this.executeWithFallback('suggestMultimedia', params);
+    return this.executeWithFallback('suggestMultimedia', params, {
+      type: 'contentAnalysis',
+      enabled: true,
+    });
   }
 
   /**
-   * Optimize readability
+   * Optimize readability (with caching)
    */
   async optimizeReadability(params) {
-    return this.executeWithFallback('optimizeReadability', params);
+    return this.executeWithFallback('optimizeReadability', params, {
+      type: 'contentAnalysis',
+      enabled: true,
+    });
   }
 
   /**
@@ -219,9 +335,10 @@ class UnifiedAIService {
       preferredProvider: this.preferredProvider,
       providerStatus: { ...this.providerStatus },
       usage: { ...this.stats },
+      cache: aiCacheService.getStats(),
       providers: {
         gemini: this.providerStatus.gemini ? geminiService.getStats() : null,
-        anthropic: this.providerStatus.anthropic ? claudeService.getStats() : null,
+        anthropic: this.providerStatus.anthropic ? { status: 'available' } : null,
       },
     };
   }
@@ -243,24 +360,19 @@ class UnifiedAIService {
         cost: 'FREE (15 requests/minute)',
         quality: 'Good',
         speed: 'Fast',
-        bestFor: 'Development, testing, high-volume generation',
+        bestFor: 'SEO optimization, meta tags, keyword research',
         status: this.providerStatus.gemini ? 'available' : 'unavailable',
+        isPreferred: this.preferredProvider === 'gemini',
       },
       anthropic: {
         name: 'Anthropic Claude',
         cost: 'PAID ($3-15 per million tokens)',
         quality: 'Excellent',
         speed: 'Medium',
-        bestFor: 'Creative writing, premium content, consistency',
+        bestFor: 'Complex content analysis, premium quality',
         status: this.providerStatus.anthropic ? 'available' : 'unavailable',
-      },
-      openai: {
-        name: 'OpenAI GPT-4',
-        cost: 'PAID ($2.50-10 per million tokens)',
-        quality: 'Excellent',
-        speed: 'Fast',
-        bestFor: 'General purpose, coding, analysis',
-        status: 'not_implemented',
+        isPreferred: this.preferredProvider === 'anthropic',
+        note: 'Fallback provider - activates when Anthropic subscription is active',
       },
     };
   }

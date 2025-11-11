@@ -13,6 +13,7 @@
     "test:auth": "node tests/auth.test.js",
     "test:subscription": "node tests/subscription.test.js",
     "test:stripe": "node tests/stripe.test.js",
+    "test:ai": "node scripts/test-ai-integration.js",
     "lint": "eslint . --ext .js",
     "lint:fix": "eslint . --ext .js --fix",
     "format": "prettier --write \"**/*.{js,json,md,yml,yaml}\"",
@@ -48,6 +49,7 @@
     "express-rate-limit": "^8.2.1",
     "helmet": "^8.1.0",
     "pg": "^8.16.3",
+    "redis": "^5.9.0",
     "stripe": "^19.3.0"
   },
   "engines": {
