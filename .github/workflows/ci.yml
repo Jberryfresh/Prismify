@@ -34,6 +34,7 @@ jobs:
   test:
     name: Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    timeout-minutes: 5 # Prevent jobs from hanging indefinitely
     strategy:
       matrix:
         node-version: [18.x, 20.x]
