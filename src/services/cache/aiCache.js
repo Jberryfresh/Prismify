@@ -25,7 +25,6 @@ class AICacheService {
       misses: 0,
       sets: 0,
       errors: 0,
-      bytesStored: 0,
     };
 
     // Cache TTL configurations (in seconds)
@@ -106,10 +105,23 @@ class AICacheService {
   /**
    * Generate cache key from params
    * Uses SHA-256 hash to create consistent, unique keys
+   * Handles nested objects by recursively sorting keys
    */
   generateCacheKey(prefix, params) {
-    const sortedParams = JSON.stringify(params, Object.keys(params).sort());
-    const hash = crypto.createHash('sha256').update(sortedParams).digest('hex');
+    // Recursively sort object keys for canonical representation
+    const canonicalJSON = JSON.stringify(params, (key, value) => {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        return Object.keys(value)
+          .sort()
+          .reduce((sorted, k) => {
+            sorted[k] = value[k];
+            return sorted;
+          }, {});
+      }
+      return value;
+    });
+
+    const hash = crypto.createHash('sha256').update(canonicalJSON).digest('hex');
     return `${prefix}${hash}`;
   }
 
@@ -174,7 +186,6 @@ class AICacheService {
       await this.client.setEx(key, ttl, serialized);
 
       this.stats.sets++;
-      this.stats.bytesStored += serialized.length;
       console.log(`💾 Cache SET: ${cacheType} (${key.substring(0, 20)}...) TTL: ${ttl}s`);
 
       return true;
@@ -217,11 +228,16 @@ class AICacheService {
 
     try {
       const prefix = this.prefixes[cacheType] || this.prefixes.general;
-      const keys = await this.client.keys(`${prefix}*`);
+      let deletedCount = 0;
 
-      if (keys.length > 0) {
-        await this.client.del(keys);
-        console.log(`🗑️  Cache INVALIDATED ALL: ${cacheType} (${keys.length} keys)`);
+      // Use SCAN instead of KEYS to avoid blocking Redis
+      for await (const key of this.client.scanIterator({ MATCH: `${prefix}*`, COUNT: 100 })) {
+        await this.client.del(key);
+        deletedCount++;
+      }
+
+      if (deletedCount > 0) {
+        console.log(`🗑️  Cache INVALIDATED ALL: ${cacheType} (${deletedCount} keys)`);
       }
 
       return true;
@@ -248,21 +264,7 @@ class AICacheService {
       totalRequests,
       hitRate: `${hitRate.toFixed(2)}%`,
       costSavings: `${costSavings.toFixed(2)}%`,
-      bytesStored: this.formatBytes(this.stats.bytesStored),
     };
-  }
-
-  /**
-   * Format bytes to human-readable format
-   */
-  formatBytes(bytes) {
-    if (bytes === 0) {
-      return '0 Bytes';
-    }
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   }
 
   /**

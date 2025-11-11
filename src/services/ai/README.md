@@ -368,10 +368,11 @@ For issues or questions:
 
 - Check `.agents/PROJECT_TODO.md` for current phase status
 - Review `.agents/PROJECT_GOALS.md` for business context
-- See `docs/AI_SETUP_GUIDE.md` for detailed setup instructions
+- Refer to project documentation in `.agents/` directory
 
 ---
 
 **Last Updated**: November 10, 2025  
 **Phase**: 2.4 - AI Service Integration  
 **Status**: ✅ Complete
+**Dependencies**: redis@5.9.0 (see package.json)

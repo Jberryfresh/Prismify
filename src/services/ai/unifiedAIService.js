@@ -182,6 +182,16 @@ class UnifiedAIService {
         continue;
       }
 
+      // Check if provider supports the requested method
+      if (typeof provider[method] !== 'function') {
+        errors.push({
+          provider: providerName,
+          error: `Method '${method}' not supported by this provider`,
+        });
+        console.log(`⚠️  ${providerName} does not support ${method}, skipping...`);
+        continue;
+      }
+
       try {
         console.log(`🤖 Attempting ${method} with ${providerName}...`);
         const result = await provider[method](params);
@@ -218,6 +228,10 @@ class UnifiedAIService {
             outputTokens: usage.outputTokens || usage.output_tokens || 0,
             method,
           });
+        } else {
+          console.warn(
+            `⚠️  No usage data returned by ${providerName} for ${method} - cost tracking may be inaccurate`
+          );
         }
 
         // Cache the result if enabled

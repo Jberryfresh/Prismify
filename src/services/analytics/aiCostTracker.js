@@ -193,18 +193,34 @@ class AICostTracker {
         dailyCost >= this.budgetThresholds.warning &&
         dailyCost < this.budgetThresholds.critical
       ) {
-        await this.createAlert(
-          'warning',
-          `Daily AI cost reached $${dailyCost.toFixed(2)} (Warning threshold: $${this.budgetThresholds.warning})`
-        );
+        // Check if alert already sent today (deduplication)
+        const alertDedupeKey = `ai:alert:dedup:warning:${date}`;
+        const alreadyAlerted = await this.redis.get(alertDedupeKey);
+
+        if (!alreadyAlerted) {
+          await this.createAlert(
+            'warning',
+            `Daily AI cost reached $${dailyCost.toFixed(2)} (Warning threshold: $${this.budgetThresholds.warning})`
+          );
+          // Set deduplication key with 24h TTL
+          await this.redis.setEx(alertDedupeKey, 24 * 60 * 60, 'true');
+        }
       }
 
       // Check critical threshold
       if (dailyCost >= this.budgetThresholds.critical) {
-        await this.createAlert(
-          'critical',
-          `Daily AI cost reached $${dailyCost.toFixed(2)} (Critical threshold: $${this.budgetThresholds.critical})`
-        );
+        // Check if alert already sent today (deduplication)
+        const alertDedupeKey = `ai:alert:dedup:critical:${date}`;
+        const alreadyAlerted = await this.redis.get(alertDedupeKey);
+
+        if (!alreadyAlerted) {
+          await this.createAlert(
+            'critical',
+            `Daily AI cost reached $${dailyCost.toFixed(2)} (Critical threshold: $${this.budgetThresholds.critical})`
+          );
+          // Set deduplication key with 24h TTL
+          await this.redis.setEx(alertDedupeKey, 24 * 60 * 60, 'true');
+        }
       }
     } catch (error) {
       console.error('Budget threshold check error:', error.message);
@@ -346,8 +362,20 @@ class AICostTracker {
     }
 
     try {
-      const keys = await this.redis.keys(`${this.keys.alerts}*`);
-      const sortedKeys = keys.sort().reverse().slice(0, limit);
+      // Use SCAN instead of KEYS to avoid blocking Redis
+      const foundKeys = [];
+      for await (const key of this.redis.scanIterator({
+        MATCH: `${this.keys.alerts}*`,
+        COUNT: 100,
+      })) {
+        foundKeys.push(key);
+        if (foundKeys.length >= limit * 2) {
+          break; // Get extra for sorting
+        }
+      }
+
+      // Sort keys by timestamp (descending) and take top N
+      const sortedKeys = foundKeys.sort().reverse().slice(0, limit);
 
       const alerts = [];
       for (const key of sortedKeys) {
