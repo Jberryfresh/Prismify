@@ -179,7 +179,7 @@ class SEOAgent extends Agent {
 
     // Validation
     if (!title || !content) {
-      console.error('[SEO] Missing required fields: title or content');
+      this.logger.error('[SEO] Missing required fields: title or content');
       return this.getFallbackMetaTags({ title, content, excerpt, keywords });
     }
 
@@ -232,11 +232,11 @@ Generate meta tags in JSON format:
         // Validate and fix any length issues
         return this.validateAndFixMetaTags(metaTags, { title, content, excerpt, keywords });
       } catch {
-        console.warn('[SEO] Failed to parse AI response, using fallback meta tags');
+        this.logger.warn('[SEO] Failed to parse AI response, using fallback meta tags');
         return this.getFallbackMetaTags({ title, content, excerpt, keywords });
       }
     } catch (error) {
-      console.error('[SEO] Error generating meta tags:', error.message);
+      this.logger.error('[SEO] Error generating meta tags:', error.message);
       return this.getFallbackMetaTags({ title, content, excerpt, keywords });
     }
   }
@@ -317,11 +317,11 @@ Return JSON format:
           timestamp: new Date().toISOString(),
         };
       } catch {
-        console.warn('[SEO] Failed to parse AI variations, generating fallback variations');
+        this.logger.warn('[SEO] Failed to parse AI variations, generating fallback variations');
         return this.generateFallbackVariations({ title, content, excerpt, keywords });
       }
     } catch (error) {
-      console.error('[SEO] Error generating meta tag variations:', error.message);
+      this.logger.error('[SEO] Error generating meta tag variations:', error.message);
       return this.generateFallbackVariations({ title, content, excerpt, keywords });
     }
   }

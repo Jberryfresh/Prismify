@@ -19,66 +19,51 @@ class AuditStorage {
   async saveAudit({ userId, projectId, url, auditResults }) {
     const supabase = createClient();
 
-    try {
-      // Prepare audit record
-      const auditRecord = {
-        user_id: userId,
-        project_id: projectId || null,
-        content_url: url,
-        analysis_type: 'comprehensive_seo_audit',
-        seo_score: auditResults.overall_score,
-        results: {
-          overall_score: auditResults.overall_score,
-          grade: auditResults.grade,
-          timestamp: auditResults.timestamp,
-          scores: auditResults.scores,
-          url: auditResults.url,
-        },
-        ai_provider: 'seo_agent',
-        created_at: new Date().toISOString(),
-      };
+    // Prepare audit record
+    const auditRecord = {
+      user_id: userId,
+      project_id: projectId || null,
+      content_url: url,
+      analysis_type: 'comprehensive_seo_audit',
+      seo_score: auditResults.overall_score,
+      results: {
+        overall_score: auditResults.overall_score,
+        grade: auditResults.grade,
+        timestamp: auditResults.timestamp,
+        scores: auditResults.scores,
+        url: auditResults.url,
+      },
+      ai_provider: 'seo_agent',
+      created_at: new Date().toISOString(),
+    };
 
-      // Insert main audit record
-      const { data: audit, error: auditError } = await supabase
-        .from('seo_analyses')
-        .insert(auditRecord)
-        .select()
-        .single();
+    // Insert main audit record
+    const { data: audit, error: auditError } = await supabase
+      .from('seo_analyses')
+      .insert(auditRecord)
+      .select()
+      .single();
 
-      if (auditError) {
-        console.error('[AuditStorage] Error saving audit:', auditError);
-        throw auditError;
-      }
-
-      // Save recommendations to separate storage for better querying
-      if (auditResults.recommendations && auditResults.recommendations.length > 0) {
-        await this.saveRecommendations({
-          auditId: audit.id,
-          recommendations: auditResults.recommendations,
-        });
-      }
-
-      // Save to audit history for progress tracking
-      await this.saveToHistory({
-        userId,
-        url,
-        score: auditResults.overall_score,
-      });
-
-      return {
-        success: true,
-        audit: {
-          id: audit.id,
-          url: audit.content_url,
-          overall_score: audit.seo_score,
-          grade: auditResults.grade,
-          created_at: audit.created_at,
-        },
-      };
-    } catch (error) {
-      console.error('[AuditStorage] Failed to save audit:', error);
-      throw error;
+    if (auditError) {
+      throw auditError;
     }
+
+    // Save recommendations to separate storage for better querying
+    if (auditResults.recommendations && auditResults.recommendations.length > 0) {
+      await this.saveRecommendations({
+        auditId: audit.id,
+        recommendations: auditResults.recommendations,
+      });
+    }
+
+    // Save to audit history for progress tracking
+    await this.saveToHistory({
+      userId,
+      url,
+      score: auditResults.overall_score,
+    });
+
+    return audit;
   }
 
   /**
@@ -102,13 +87,12 @@ class AuditStorage {
         .eq('id', auditId);
 
       if (error) {
-        console.error('[AuditStorage] Error saving recommendations:', error);
         // Don't throw - recommendations are supplementary
+        return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (error) {
-      console.error('[AuditStorage] Failed to save recommendations:', error);
       return { success: false, error: error.message };
     }
   }
@@ -145,7 +129,6 @@ class AuditStorage {
         currentScore: score,
       };
     } catch (error) {
-      console.error('[AuditStorage] Failed to save to history:', error);
       return { success: false, error: error.message };
     }
   }
@@ -186,7 +169,6 @@ class AuditStorage {
         },
       };
     } catch (error) {
-      console.error('[AuditStorage] Failed to get audit:', error);
       return { success: false, error: error.message };
     }
   }
@@ -220,7 +202,6 @@ class AuditStorage {
         })),
       };
     } catch (error) {
-      console.error('[AuditStorage] Failed to get audit history:', error);
       return { success: false, error: error.message };
     }
   }
@@ -266,7 +247,6 @@ class AuditStorage {
         },
       };
     } catch (error) {
-      console.error('[AuditStorage] Failed to list audits:', error);
       return { success: false, error: error.message };
     }
   }
@@ -290,7 +270,6 @@ class AuditStorage {
 
       return { success: true };
     } catch (error) {
-      console.error('[AuditStorage] Failed to delete audit:', error);
       return { success: false, error: error.message };
     }
   }
@@ -335,7 +314,6 @@ class AuditStorage {
         },
       };
     } catch (error) {
-      console.error('[AuditStorage] Failed to get audit stats:', error);
       return { success: false, error: error.message };
     }
   }
@@ -368,44 +346,38 @@ class AuditStorage {
   async saveMetaTagVariations({ userId, projectId, variations }) {
     const supabase = createClient();
 
-    try {
-      const metaRecord = {
-        user_id: userId,
-        project_id: projectId || null,
-        title: variations.titleVariations[0]?.text || '',
-        description: variations.descriptionVariations[0]?.text || '',
-        keywords: variations.metaKeywords || [],
-        og_title: variations.ogTitle || '',
-        og_description: variations.ogDescription || '',
-        twitter_card: 'summary_large_image',
-        ai_provider: variations.generated ? 'gemini' : 'fallback',
-        created_at: new Date().toISOString(),
-      };
+    const metaRecord = {
+      user_id: userId,
+      project_id: projectId || null,
+      title: variations.titleVariations[0]?.text || '',
+      description: variations.descriptionVariations[0]?.text || '',
+      keywords: variations.metaKeywords || [],
+      og_title: variations.ogTitle || '',
+      og_description: variations.ogDescription || '',
+      twitter_card: 'summary_large_image',
+      ai_provider: variations.generated ? 'gemini' : 'fallback',
+      created_at: new Date().toISOString(),
+    };
 
-      const { data: metaTags, error } = await supabase
-        .from('meta_tags')
-        .insert(metaRecord)
-        .select()
-        .single();
+    const { data: metaTags, error } = await supabase
+      .from('meta_tags')
+      .insert(metaRecord)
+      .select()
+      .single();
 
-      if (error) {
-        console.error('[AuditStorage] Error saving meta tags:', error);
-        throw error;
-      }
-
-      return {
-        success: true,
-        metaTags: {
-          id: metaTags.id,
-          title: metaTags.title,
-          description: metaTags.description,
-          created_at: metaTags.created_at,
-        },
-      };
-    } catch (error) {
-      console.error('[AuditStorage] Failed to save meta tags:', error);
+    if (error) {
       throw error;
     }
+
+    return {
+      success: true,
+      metaTags: {
+        id: metaTags.id,
+        title: metaTags.title,
+        description: metaTags.description,
+        created_at: metaTags.created_at,
+      },
+    };
   }
 }
 
