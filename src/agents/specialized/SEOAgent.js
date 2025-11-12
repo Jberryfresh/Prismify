@@ -567,7 +567,10 @@ Return JSON format:
   }
 
   /**
-   * Count keywords in text
+   * Count how many keywords from the list appear in the text
+   * @param {string} text - Text to search
+   * @param {Array<string>} keywords - Keywords to count
+   * @returns {number} Number of keywords found
    */
   countKeywords(text, keywords) {
     const lowerText = text.toLowerCase();
@@ -575,7 +578,10 @@ Return JSON format:
   }
 
   /**
-   * Calculate keyword density
+   * Calculate keyword density as ratio of keyword occurrences to total words
+   * @param {string} text - Text to analyze
+   * @param {Array<string>} keywords - Keywords to measure
+   * @returns {number} Density ratio (0-1, where 0.02 = 2%)
    */
   calculateKeywordDensity(text, keywords) {
     const words = text.split(/\s+/).length;
@@ -587,7 +593,16 @@ Return JSON format:
   }
 
   /**
-   * Score meta title (0-100)
+   * Calculates an SEO score (0-100) for a meta title based on length, keyword presence, and readability
+   *
+   * Scoring breakdown:
+   *   - Length (40 points): Optimal length is 50-60 characters (40pts), with partial credit for near-optimal lengths
+   *   - Keyword presence (40 points): 2+ target keywords (40pts), 1 keyword (25pts), none (5pts)
+   *   - Readability (20 points): Includes numbers (10pts) and/or power words (10pts)
+   *
+   * @param {string} text - The meta title text to score
+   * @param {string[]} keywords - Array of target keywords to check for presence in the title
+   * @returns {number} SEO score for the meta title (0-100)
    */
   scoreMetaTitle(text, keywords) {
     let score = 0;
@@ -629,7 +644,17 @@ Return JSON format:
   }
 
   /**
-   * Score meta description (0-100)
+   * Scores a meta description for SEO effectiveness based on a 4-part system
+   *
+   * The scoring system (max 100 points) is composed of:
+   *   - Length (30 points): Optimal if between 150-160 characters
+   *   - Keyword Density (30 points): Optimal if target keywords make up 2-4% of the text
+   *   - Call to Action (20 points): Presence of action-oriented words (e.g., "learn", "discover")
+   *   - Benefits/Value Proposition (20 points): Presence of benefit/value words (e.g., "improve", "boost")
+   *
+   * @param {string} text - The meta description text to score
+   * @param {string[]} keywords - Array of target keywords to check for density
+   * @returns {number} SEO score for the meta description (0-100)
    */
   scoreMetaDescription(text, keywords) {
     let score = 0;
@@ -934,22 +959,24 @@ Provide keywords in JSON format:
   }
 
   /**
-   * Get grade
+   * Get grade from score (0-100 range)
+   * @param {number} score - Score from 0-100
+   * @returns {string} Letter grade (A+, A, B, C, D, F)
    */
   getGrade(score) {
-    if (score >= 0.9) {
+    if (score >= 90) {
       return 'A+';
     }
-    if (score >= 0.8) {
+    if (score >= 80) {
       return 'A';
     }
-    if (score >= 0.7) {
+    if (score >= 70) {
       return 'B';
     }
-    if (score >= 0.6) {
+    if (score >= 60) {
       return 'C';
     }
-    if (score >= 0.5) {
+    if (score >= 50) {
       return 'D';
     }
     return 'F';
@@ -1103,7 +1130,7 @@ Provide keywords in JSON format:
         accessibilityScore,
       ] = await Promise.all([
         this.analyzeMetaTags(content, contentInfo),
-        this.analyzeContentQuality(content, contentInfo),
+        this.analyzeContentQuality(url, content, contentInfo),
         this.analyzeTechnicalSEO(url, content),
         this.analyzeMobileOptimization(content),
         this.analyzePerformance(url, content),
@@ -1147,7 +1174,7 @@ Provide keywords in JSON format:
           accessibility: accessibilityScore,
         },
         recommendations,
-        grade: this.getGrade(overallScore / 100),
+        grade: this.getGrade(overallScore),
       };
     } catch (error) {
       this.logger.error('[SEO] Comprehensive audit failed:', error);
@@ -1332,7 +1359,7 @@ Provide keywords in JSON format:
   /**
    * Component 2: Analyze Content Quality (0-100 score)
    */
-  async analyzeContentQuality(content, contentInfo) {
+  async analyzeContentQuality(url, content, contentInfo) {
     const analysis = {
       score: 0,
       issues: [],
@@ -1414,9 +1441,34 @@ Provide keywords in JSON format:
     }
 
     // Internal linking check (15 points)
-    const internalLinks = contentInfo.links.filter(
-      (link) => !link.href.match(/^https?:\/\//)
-    ).length;
+    // Improved internal link detection: relative URLs or same-domain absolute URLs
+    let baseDomain = null;
+    try {
+      if (url) {
+        baseDomain = new URL(url).hostname.replace(/^www\./, '');
+      }
+    } catch {
+      // fallback: no base domain
+    }
+
+    const internalLinks = contentInfo.links.filter((link) => {
+      if (!link.href) {
+        return false;
+      }
+      // Relative URL (not starting with http(s):// or //)
+      if (!/^(https?:)?\/\//i.test(link.href)) {
+        return true;
+      }
+      // Protocol-relative or absolute URL: check domain
+      try {
+        // For protocol-relative URLs, add a dummy protocol
+        const hrefToParse = link.href.startsWith('//') ? 'http:' + link.href : link.href;
+        const linkDomain = new URL(hrefToParse).hostname.replace(/^www\./, '');
+        return baseDomain && linkDomain === baseDomain;
+      } catch {
+        return false;
+      }
+    }).length;
 
     if (internalLinks >= 3) {
       analysis.score += 15;

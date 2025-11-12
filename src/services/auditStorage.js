@@ -82,26 +82,37 @@ class AuditStorage {
   /**
    * Save recommendations as structured data
    * Uses JSONB storage in results field with recommendations array
+   * @param {Object} params
+   * @param {string} params.auditId - Audit ID
+   * @param {Array} params.recommendations - Recommendations array
+   * @returns {Promise<Object>} Success object with {success: boolean, error?: string}
    */
   async saveRecommendations({ auditId, recommendations }) {
     const supabase = createClient();
 
     try {
-      // Store recommendations in the audit results JSONB field
-      const { error } = await supabase
+      // Fetch current results JSONB object
+      const { data: audit, error: fetchError } = await supabase
         .from('seo_analyses')
-        .update({
-          results: supabase.rpc('jsonb_set', {
-            target: 'results',
-            path: '{recommendations}',
-            value: JSON.stringify(recommendations),
-          }),
-        })
+        .select('results')
+        .eq('id', auditId)
+        .single();
+
+      if (fetchError) {
+        return { success: false, error: fetchError.message };
+      }
+
+      const currentResults = audit && audit.results ? audit.results : {};
+      const updatedResults = { ...currentResults, recommendations };
+
+      const { error: updateError } = await supabase
+        .from('seo_analyses')
+        .update({ results: updatedResults })
         .eq('id', auditId);
 
-      if (error) {
+      if (updateError) {
         // Don't throw - recommendations are supplementary
-        return { success: false, error: error.message };
+        return { success: false, error: updateError.message };
       }
 
       return { success: true };
@@ -332,7 +343,9 @@ class AuditStorage {
   }
 
   /**
-   * Calculate grade from score
+   * Calculate grade from score (0-100 range)
+   * @param {number} score - Score from 0-100
+   * @returns {string} Letter grade (A+, A, B, C, D, F)
    */
   calculateGrade(score) {
     if (score >= 90) {
