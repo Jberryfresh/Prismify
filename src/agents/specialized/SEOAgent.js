@@ -153,26 +153,49 @@ class SEOAgent extends Agent {
    * @param {Object} params - Meta tag parameters
    * @returns {Promise<Object>} Generated meta tags
    */
+  /**
+   * Generate SEO-optimized meta tags with AI
+   * Enhanced to generate multiple variations per field with validation
+   * @param {Object} params - Meta tag generation parameters
+   * @param {string} params.title - Page title
+   * @param {string} params.content - Page content
+   * @param {string} params.excerpt - Page excerpt/summary
+   * @param {Array} params.keywords - Target keywords
+   * @param {string} params.category - Content category
+   * @param {boolean} params.generateVariations - Generate 3-5 variations per field (default: false)
+   * @returns {Promise<Object>} Generated meta tags with variations
+   */
   async generateMetaTags(params) {
-    const { title = '', content = '', excerpt = '', keywords = [], category } = params;
+    const {
+      title = '',
+      content = '',
+      excerpt = '',
+      keywords = [],
+      category,
+      generateVariations = false,
+    } = params;
 
     this.logger.info('[SEO] Generating meta tags');
 
     // Validation
     if (!title || !content) {
       console.error('[SEO] Missing required fields: title or content');
-      return {
-        metaTitle: title || 'Untitled',
-        metaDescription: excerpt || content.substring(0, 160) || 'No description',
-        metaKeywords: keywords,
-        ogTitle: title || 'Untitled',
-        ogDescription: excerpt || content.substring(0, 200) || 'No description',
-        twitterTitle: title || 'Untitled',
-        twitterDescription: excerpt || content.substring(0, 200) || 'No description',
-        focusKeyword: keywords[0] || 'general',
-      };
+      return this.getFallbackMetaTags({ title, content, excerpt, keywords });
     }
 
+    // For backwards compatibility, use single-variation mode by default
+    if (!generateVariations) {
+      return this.generateSingleMetaTags({ title, content, excerpt, keywords, category });
+    }
+
+    // Generate multiple variations for SaaS product
+    return this.generateMetaTagVariations({ title, content, excerpt, keywords, category });
+  }
+
+  /**
+   * Generate single optimized meta tags (legacy/default mode)
+   */
+  async generateSingleMetaTags({ title, content, excerpt, keywords, category }) {
     const prompt = `Generate SEO-optimized meta tags for the following article:
 
 Title: ${title}
@@ -195,7 +218,6 @@ Generate meta tags in JSON format:
 }`;
 
     try {
-      // Use AI to suggest relevant keywords using unified service
       const aiResponse = await unifiedAIService.generate({
         prompt: prompt,
         maxTokens: 300,
@@ -207,36 +229,449 @@ Generate meta tags in JSON format:
 
       try {
         metaTags = JSON.parse(metaText);
+        // Validate and fix any length issues
+        return this.validateAndFixMetaTags(metaTags, { title, content, excerpt, keywords });
       } catch {
-        // Fallback to basic meta tags if AI response isn't valid JSON
         console.warn('[SEO] Failed to parse AI response, using fallback meta tags');
-        metaTags = {
-          metaTitle: title.substring(0, 60),
-          metaDescription: excerpt ? excerpt.substring(0, 160) : content.substring(0, 160),
-          metaKeywords: keywords.slice(0, 5),
-          ogTitle: title,
-          ogDescription: excerpt || content.substring(0, 200),
-          twitterTitle: title,
-          twitterDescription: excerpt || content.substring(0, 200),
-          focusKeyword: keywords[0] || 'news',
-        };
+        return this.getFallbackMetaTags({ title, content, excerpt, keywords });
       }
-
-      return metaTags;
     } catch (error) {
       console.error('[SEO] Error generating meta tags:', error.message);
-      // Return basic meta tags on error
-      return {
-        metaTitle: title.substring(0, 60),
-        metaDescription: excerpt ? excerpt.substring(0, 160) : content.substring(0, 160),
-        metaKeywords: keywords.slice(0, 5),
-        ogTitle: title,
-        ogDescription: excerpt || content.substring(0, 200),
-        twitterTitle: title,
-        twitterDescription: excerpt || content.substring(0, 200),
-        focusKeyword: keywords[0] || 'news',
-      };
+      return this.getFallbackMetaTags({ title, content, excerpt, keywords });
     }
+  }
+
+  /**
+   * Generate multiple meta tag variations (SaaS mode)
+   * Generates 3-5 variations for titles and descriptions
+   */
+  async generateMetaTagVariations({ title, content, excerpt, keywords, category }) {
+    const prompt = `Generate SEO-optimized meta tag variations for the following article:
+
+Title: ${title}
+Category: ${category || 'General'}
+Target Keywords: ${keywords.join(', ')}
+
+Content Preview:
+${content.substring(0, 500)}...
+
+Generate 3-5 variations for titles and descriptions with different angles and keyword placements.
+Each variation should be unique and optimized for different search intents.
+
+IMPORTANT LENGTH REQUIREMENTS:
+- Meta titles: 50-60 characters (STRICT - will be truncated in search results if longer)
+- Meta descriptions: 150-160 characters (STRICT - will be truncated if longer)
+
+Return JSON format:
+{
+  "titleVariations": [
+    {"text": "Title variation 1", "length": 55, "keywordCount": 2, "score": 95},
+    {"text": "Title variation 2", "length": 58, "keywordCount": 1, "score": 88},
+    {"text": "Title variation 3", "length": 52, "keywordCount": 3, "score": 92}
+  ],
+  "descriptionVariations": [
+    {"text": "Description variation 1 with compelling CTA", "length": 155, "keywordDensity": 0.03, "score": 90},
+    {"text": "Description variation 2 with different angle", "length": 158, "keywordDensity": 0.02, "score": 85},
+    {"text": "Description variation 3 with benefits focus", "length": 152, "keywordDensity": 0.025, "score": 88}
+  ],
+  "metaKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
+  "focusKeyword": "primary keyword",
+  "recommendations": [
+    "Use title variation 1 for maximum CTR",
+    "Pair with description variation 1 for consistent messaging"
+  ]
+}`;
+
+    try {
+      const aiResponse = await unifiedAIService.generate({
+        prompt: prompt,
+        maxTokens: 800,
+        temperature: 0.8, // Higher temperature for more creative variations
+      });
+
+      const metaText = aiResponse.text || aiResponse.content || JSON.stringify(aiResponse);
+      let variations;
+
+      try {
+        variations = JSON.parse(metaText);
+
+        // Validate all variations
+        const validated = this.validateMetaTagVariations(variations, {
+          title,
+          content,
+          excerpt,
+          keywords,
+        });
+
+        // Add Open Graph and Twitter variations (use top-scored title/description)
+        const topTitle = validated.titleVariations[0].text;
+        const topDescription = validated.descriptionVariations[0].text;
+
+        return {
+          ...validated,
+          ogTitle: topTitle,
+          ogDescription: topDescription.substring(0, 200),
+          twitterTitle: topTitle.substring(0, 70),
+          twitterDescription: topDescription.substring(0, 200),
+          generated: true,
+          timestamp: new Date().toISOString(),
+        };
+      } catch {
+        console.warn('[SEO] Failed to parse AI variations, generating fallback variations');
+        return this.generateFallbackVariations({ title, content, excerpt, keywords });
+      }
+    } catch (error) {
+      console.error('[SEO] Error generating meta tag variations:', error.message);
+      return this.generateFallbackVariations({ title, content, excerpt, keywords });
+    }
+  }
+
+  /**
+   * Validate and fix meta tag variations
+   */
+  validateMetaTagVariations(variations, { title, content, excerpt, keywords }) {
+    const validated = {
+      titleVariations: [],
+      descriptionVariations: [],
+      metaKeywords: variations.metaKeywords || keywords.slice(0, 5),
+      focusKeyword: variations.focusKeyword || keywords[0] || 'general',
+      recommendations: variations.recommendations || [],
+    };
+
+    // Validate title variations
+    if (variations.titleVariations && Array.isArray(variations.titleVariations)) {
+      variations.titleVariations.forEach((titleVar) => {
+        const text = titleVar.text || titleVar;
+        const length = text.length;
+
+        // Enforce 50-60 character limit
+        if (length >= 50 && length <= 60) {
+          validated.titleVariations.push({
+            text,
+            length,
+            keywordCount: titleVar.keywordCount || this.countKeywords(text, keywords),
+            score: titleVar.score || this.scoreMetaTitle(text, keywords),
+            valid: true,
+          });
+        } else if (length > 60) {
+          // Truncate to 60 characters
+          const truncated = text.substring(0, 57) + '...';
+          validated.titleVariations.push({
+            text: truncated,
+            length: truncated.length,
+            keywordCount: this.countKeywords(truncated, keywords),
+            score: this.scoreMetaTitle(truncated, keywords) - 10, // Penalty for truncation
+            valid: false,
+            warning: 'Truncated from ' + length + ' characters',
+          });
+        } else {
+          // Too short, but keep it
+          validated.titleVariations.push({
+            text,
+            length,
+            keywordCount: this.countKeywords(text, keywords),
+            score: this.scoreMetaTitle(text, keywords) - 15, // Penalty for being too short
+            valid: false,
+            warning: 'Title too short (recommended: 50-60 characters)',
+          });
+        }
+      });
+    }
+
+    // Validate description variations
+    if (variations.descriptionVariations && Array.isArray(variations.descriptionVariations)) {
+      variations.descriptionVariations.forEach((descVar) => {
+        const text = descVar.text || descVar;
+        const length = text.length;
+
+        // Enforce 150-160 character limit
+        if (length >= 150 && length <= 160) {
+          validated.descriptionVariations.push({
+            text,
+            length,
+            keywordDensity: descVar.keywordDensity || this.calculateKeywordDensity(text, keywords),
+            score: descVar.score || this.scoreMetaDescription(text, keywords),
+            valid: true,
+          });
+        } else if (length > 160) {
+          // Truncate to 160 characters
+          const truncated = text.substring(0, 157) + '...';
+          validated.descriptionVariations.push({
+            text: truncated,
+            length: truncated.length,
+            keywordDensity: this.calculateKeywordDensity(truncated, keywords),
+            score: this.scoreMetaDescription(truncated, keywords) - 10,
+            valid: false,
+            warning: 'Truncated from ' + length + ' characters',
+          });
+        } else {
+          // Too short, but keep it
+          validated.descriptionVariations.push({
+            text,
+            length,
+            keywordDensity: this.calculateKeywordDensity(text, keywords),
+            score: this.scoreMetaDescription(text, keywords) - 15,
+            valid: false,
+            warning: 'Description too short (recommended: 150-160 characters)',
+          });
+        }
+      });
+    }
+
+    // Sort by score (highest first)
+    validated.titleVariations.sort((a, b) => b.score - a.score);
+    validated.descriptionVariations.sort((a, b) => b.score - a.score);
+
+    // Ensure we have at least 3 variations
+    if (validated.titleVariations.length < 3) {
+      const fallback = this.generateFallbackVariations({ title, content, excerpt, keywords });
+      validated.titleVariations = [...validated.titleVariations, ...fallback.titleVariations].slice(
+        0,
+        5
+      );
+    }
+
+    if (validated.descriptionVariations.length < 3) {
+      const fallback = this.generateFallbackVariations({ title, content, excerpt, keywords });
+      validated.descriptionVariations = [
+        ...validated.descriptionVariations,
+        ...fallback.descriptionVariations,
+      ].slice(0, 5);
+    }
+
+    return validated;
+  }
+
+  /**
+   * Generate fallback variations when AI fails
+   */
+  generateFallbackVariations({ title, content, excerpt, keywords }) {
+    const baseTitle = title.substring(0, 60);
+    const baseDescription = excerpt || content.substring(0, 160);
+    const primaryKeyword = keywords[0] || 'guide';
+
+    return {
+      titleVariations: [
+        {
+          text: baseTitle.substring(0, 57) + '...',
+          length: 60,
+          keywordCount: this.countKeywords(baseTitle, keywords),
+          score: 75,
+          valid: true,
+        },
+        {
+          text: `${primaryKeyword}: ${baseTitle.substring(0, 50)}`,
+          length: Math.min(primaryKeyword.length + baseTitle.substring(0, 50).length + 2, 60),
+          keywordCount: 1,
+          score: 70,
+          valid: true,
+        },
+        {
+          text: `${baseTitle.substring(0, 45)} | ${primaryKeyword}`,
+          length: Math.min(baseTitle.substring(0, 45).length + primaryKeyword.length + 3, 60),
+          keywordCount: 1,
+          score: 68,
+          valid: true,
+        },
+      ],
+      descriptionVariations: [
+        {
+          text: baseDescription.substring(0, 157) + '...',
+          length: 160,
+          keywordDensity: this.calculateKeywordDensity(baseDescription, keywords),
+          score: 70,
+          valid: true,
+        },
+        {
+          text: `Learn about ${primaryKeyword}. ${baseDescription.substring(0, 130)}...`,
+          length: 160,
+          keywordDensity: 0.02,
+          score: 65,
+          valid: true,
+        },
+        {
+          text: `${baseDescription.substring(0, 140)} Read more here.`,
+          length: Math.min(baseDescription.substring(0, 140).length + 15, 160),
+          keywordDensity: this.calculateKeywordDensity(baseDescription, keywords),
+          score: 68,
+          valid: true,
+        },
+      ],
+      metaKeywords: keywords.slice(0, 5),
+      focusKeyword: keywords[0] || 'general',
+      recommendations: ['AI generation unavailable - using fallback variations'],
+      generated: false,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Validate and fix single meta tags
+   */
+  validateAndFixMetaTags(metaTags, { title, content, excerpt, keywords }) {
+    return {
+      metaTitle: this.validateLength(metaTags.metaTitle || title, 50, 60),
+      metaDescription: this.validateLength(
+        metaTags.metaDescription || excerpt || content,
+        150,
+        160
+      ),
+      metaKeywords: metaTags.metaKeywords || keywords.slice(0, 5),
+      ogTitle: this.validateLength(metaTags.ogTitle || metaTags.metaTitle || title, 50, 60),
+      ogDescription: this.validateLength(
+        metaTags.ogDescription || metaTags.metaDescription || excerpt || content,
+        150,
+        200
+      ),
+      twitterTitle: this.validateLength(
+        metaTags.twitterTitle || metaTags.metaTitle || title,
+        50,
+        70
+      ),
+      twitterDescription: this.validateLength(
+        metaTags.twitterDescription || metaTags.metaDescription || excerpt || content,
+        150,
+        200
+      ),
+      focusKeyword: metaTags.focusKeyword || keywords[0] || 'general',
+    };
+  }
+
+  /**
+   * Get fallback meta tags when generation fails
+   */
+  getFallbackMetaTags({ title, content, excerpt, keywords }) {
+    return {
+      metaTitle: this.validateLength(title, 50, 60),
+      metaDescription: this.validateLength(excerpt || content, 150, 160),
+      metaKeywords: keywords.slice(0, 5),
+      ogTitle: this.validateLength(title, 50, 60),
+      ogDescription: this.validateLength(excerpt || content, 150, 200),
+      twitterTitle: this.validateLength(title, 50, 70),
+      twitterDescription: this.validateLength(excerpt || content, 150, 200),
+      focusKeyword: keywords[0] || 'general',
+    };
+  }
+
+  /**
+   * Validate text length and truncate if needed
+   */
+  validateLength(text, minLength, maxLength) {
+    if (!text) {
+      return '';
+    }
+    if (text.length > maxLength) {
+      return text.substring(0, maxLength - 3) + '...';
+    }
+    return text;
+  }
+
+  /**
+   * Count keywords in text
+   */
+  countKeywords(text, keywords) {
+    const lowerText = text.toLowerCase();
+    return keywords.filter((keyword) => lowerText.includes(keyword.toLowerCase())).length;
+  }
+
+  /**
+   * Calculate keyword density
+   */
+  calculateKeywordDensity(text, keywords) {
+    const words = text.split(/\s+/).length;
+    const keywordOccurrences = keywords.reduce((count, keyword) => {
+      const regex = new RegExp(keyword, 'gi');
+      return count + (text.match(regex) || []).length;
+    }, 0);
+    return words > 0 ? keywordOccurrences / words : 0;
+  }
+
+  /**
+   * Score meta title (0-100)
+   */
+  scoreMetaTitle(text, keywords) {
+    let score = 0;
+
+    // Length check (40 points)
+    const length = text.length;
+    if (length >= 50 && length <= 60) {
+      score += 40;
+    } else if (length >= 45 && length < 50) {
+      score += 30;
+    } else if (length > 60 && length <= 65) {
+      score += 25;
+    } else {
+      score += 10;
+    }
+
+    // Keyword presence (40 points)
+    const keywordCount = this.countKeywords(text, keywords);
+    if (keywordCount >= 2) {
+      score += 40;
+    } else if (keywordCount === 1) {
+      score += 25;
+    } else {
+      score += 5;
+    }
+
+    // Readability (20 points)
+    const hasNumbers = /\d/.test(text);
+    const hasPowerWords = /(best|top|guide|how|ultimate|complete|essential)/i.test(text);
+
+    if (hasNumbers) {
+      score += 10;
+    }
+    if (hasPowerWords) {
+      score += 10;
+    }
+
+    return Math.min(score, 100);
+  }
+
+  /**
+   * Score meta description (0-100)
+   */
+  scoreMetaDescription(text, keywords) {
+    let score = 0;
+
+    // Length check (30 points)
+    const length = text.length;
+    if (length >= 150 && length <= 160) {
+      score += 30;
+    } else if (length >= 140 && length < 150) {
+      score += 20;
+    } else if (length > 160 && length <= 170) {
+      score += 15;
+    } else {
+      score += 5;
+    }
+
+    // Keyword density (30 points)
+    const density = this.calculateKeywordDensity(text, keywords);
+    if (density >= 0.02 && density <= 0.04) {
+      score += 30;
+    } else if (density >= 0.01 && density < 0.02) {
+      score += 20;
+    } else if (density > 0.04 && density <= 0.06) {
+      score += 15;
+    } else {
+      score += 5;
+    }
+
+    // Call to action (20 points)
+    const hasCTA = /(learn|discover|find|get|read|explore|see|click)/i.test(text);
+    if (hasCTA) {
+      score += 20;
+    }
+
+    // Benefits/value proposition (20 points)
+    const hasBenefits =
+      /(improve|increase|boost|optimize|enhance|grow|save|easy|fast|simple)/i.test(text);
+    if (hasBenefits) {
+      score += 20;
+    }
+
+    return Math.min(score, 100);
   }
 
   /**
