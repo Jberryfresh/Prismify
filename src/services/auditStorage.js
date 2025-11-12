@@ -19,51 +19,64 @@ class AuditStorage {
   async saveAudit({ userId, projectId, url, auditResults }) {
     const supabase = createClient();
 
-    // Prepare audit record
-    const auditRecord = {
-      user_id: userId,
-      project_id: projectId || null,
-      content_url: url,
-      analysis_type: 'comprehensive_seo_audit',
-      seo_score: auditResults.overall_score,
-      results: {
-        overall_score: auditResults.overall_score,
-        grade: auditResults.grade,
-        timestamp: auditResults.timestamp,
-        scores: auditResults.scores,
-        url: auditResults.url,
-      },
-      ai_provider: 'seo_agent',
-      created_at: new Date().toISOString(),
-    };
+    try {
+      // Prepare audit record
+      const auditRecord = {
+        user_id: userId,
+        project_id: projectId || null,
+        content_url: url,
+        analysis_type: 'comprehensive_seo_audit',
+        seo_score: auditResults.overall_score,
+        results: {
+          overall_score: auditResults.overall_score,
+          grade: auditResults.grade,
+          timestamp: auditResults.timestamp,
+          scores: auditResults.scores,
+          url: auditResults.url,
+        },
+        ai_provider: 'seo_agent',
+        created_at: new Date().toISOString(),
+      };
 
-    // Insert main audit record
-    const { data: audit, error: auditError } = await supabase
-      .from('seo_analyses')
-      .insert(auditRecord)
-      .select()
-      .single();
+      // Insert main audit record
+      const { data: audit, error: auditError } = await supabase
+        .from('seo_analyses')
+        .insert(auditRecord)
+        .select()
+        .single();
 
-    if (auditError) {
-      throw auditError;
-    }
+      if (auditError) {
+        return { success: false, error: auditError.message };
+      }
 
-    // Save recommendations to separate storage for better querying
-    if (auditResults.recommendations && auditResults.recommendations.length > 0) {
-      await this.saveRecommendations({
-        auditId: audit.id,
-        recommendations: auditResults.recommendations,
+      // Save recommendations to separate storage for better querying
+      if (auditResults.recommendations && auditResults.recommendations.length > 0) {
+        await this.saveRecommendations({
+          auditId: audit.id,
+          recommendations: auditResults.recommendations,
+        });
+      }
+
+      // Save to audit history for progress tracking
+      await this.saveToHistory({
+        userId,
+        url,
+        score: auditResults.overall_score,
       });
+
+      return {
+        success: true,
+        audit: {
+          id: audit.id,
+          url: audit.content_url,
+          overall_score: audit.seo_score,
+          grade: audit.results?.grade,
+          created_at: audit.created_at,
+        },
+      };
+    } catch (error) {
+      return { success: false, error: error.message };
     }
-
-    // Save to audit history for progress tracking
-    await this.saveToHistory({
-      userId,
-      url,
-      score: auditResults.overall_score,
-    });
-
-    return audit;
   }
 
   /**
