@@ -104,7 +104,7 @@ export default async function DashboardPage() {
               <Badge variant="secondary">Accessibility</Badge>
               <Badge variant="secondary">+ Recommendations</Badge>
             </div>
-            <Link href="/audits">
+            <Link href="/dashboard/audits">
               <Button className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
                 <FileSearch className="mr-2 h-4 w-4" />
                 Run Your First Audit
@@ -119,7 +119,7 @@ export default async function DashboardPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Recent Audits</CardTitle>
-            <Link href="/audits">
+            <Link href="/dashboard/audits/history">
               <Button variant="ghost" size="sm">
                 View All
               </Button>
