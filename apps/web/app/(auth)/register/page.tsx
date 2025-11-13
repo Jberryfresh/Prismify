@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Sparkles, Mail, Lock, Loader2, Github, User } from 'lucide-react';
+import { Sparkles, Mail, Loader2, Github, User } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
