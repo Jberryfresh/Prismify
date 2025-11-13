@@ -29,7 +29,16 @@ export default function TestAuthPage() {
       // Also log to console
       console.log(formatTestResults(testResults));
     } catch (error) {
+      // Surface the error in the UI so developers immediately see what went wrong
       console.error('Error running tests:', error);
+      setResults([
+        {
+          test: 'Test Runner',
+          status: 'fail',
+          message: error instanceof Error ? error.message : String(error),
+          duration: 0,
+        },
+      ]);
     } finally {
       setLoading(false);
     }

@@ -17,7 +17,20 @@ interface TestResult {
  */
 export async function runAuthTests(): Promise<TestResult[]> {
   const results: TestResult[] = [];
-  const supabase = createClient();
+  // Create client with guard so we can report a clear failure in the UI
+  let supabase: ReturnType<typeof createClient> | null = null;
+  try {
+    supabase = createClient();
+  } catch (err) {
+    results.push({
+      test: 'Supabase Client Initialization',
+      status: 'fail',
+      message: err instanceof Error ? err.message : String(err),
+      duration: 0,
+    });
+    // If the client can't be created, return early with the single failure so the UI can show it
+    return results;
+  }
 
   // Test 1: Supabase client initialization
   const test1Start = Date.now();
