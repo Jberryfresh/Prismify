@@ -84,8 +84,50 @@ export default function AuditsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        const errorMsg = data.error || data.message || JSON.stringify(data) || 'Failed to run audit';
-        throw new Error(errorMsg);
+        const extractErrorMessage = (payload: unknown): string => {
+          if (!payload) return 'Failed to run audit';
+          if (typeof payload === 'string') return payload;
+
+          if (typeof payload === 'object') {
+            const errorPayload = payload as {
+              error?: unknown;
+              message?: unknown;
+            };
+
+            if (errorPayload.error) {
+              if (typeof errorPayload.error === 'string') {
+                return errorPayload.error;
+              }
+
+              if (
+                typeof errorPayload.error === 'object' &&
+                errorPayload.error !== null &&
+                'message' in errorPayload.error
+              ) {
+                const nestedMessage = (errorPayload.error as { message?: unknown }).message;
+                if (typeof nestedMessage === 'string') {
+                  return nestedMessage;
+                }
+              }
+
+              return JSON.stringify(errorPayload.error, null, 2);
+            }
+
+            if (typeof errorPayload.message === 'string') {
+              return errorPayload.message;
+            }
+
+            if (errorPayload.message && typeof errorPayload.message === 'object') {
+              return JSON.stringify(errorPayload.message, null, 2);
+            }
+
+            return JSON.stringify(errorPayload, null, 2);
+          }
+
+          return String(payload);
+        };
+
+        throw new Error(extractErrorMessage(data));
       }
 
       setProgress(100);
@@ -143,7 +185,7 @@ export default function AuditsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">SEO Audit</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-2">
-          Analyze your website's SEO performance and get actionable recommendations
+          Analyze your website&#39;s SEO performance and get actionable recommendations
         </p>
       </div>
 
