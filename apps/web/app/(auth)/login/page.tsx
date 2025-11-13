@@ -62,7 +62,7 @@ export default function LoginPage() {
         setLoading(false);
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
       setLoading(false);
     }
   };
