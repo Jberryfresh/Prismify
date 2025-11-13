@@ -52,24 +52,36 @@ export async function runAuthTests(): Promise<TestResult[]> {
     });
   }
 
-  // Test 2: Protected route redirect (simulated)
+  // Test 2: Protected route redirect (check if middleware is protecting routes)
   const test2Start = Date.now();
   try {
-    const response = await fetch('/dashboard');
-    const redirected = response.redirected || response.url.includes('/login');
+    // Fetch with redirect: 'manual' to intercept the redirect
+    const response = await fetch('/dashboard', { redirect: 'manual' });
     
-    if (redirected) {
+    // Check if we got a redirect response (3xx status)
+    const isRedirect = response.status >= 300 && response.status < 400;
+    const locationHeader = response.headers.get('location');
+    const redirectsToLogin = locationHeader?.includes('/login');
+    
+    if (isRedirect && redirectsToLogin) {
       results.push({
         test: 'Protected Route Redirect (Unauthenticated)',
         status: 'pass',
-        message: 'Correctly redirects to /login when not authenticated',
+        message: `Correctly redirects to ${locationHeader} when not authenticated`,
+        duration: Date.now() - test2Start,
+      });
+    } else if (isRedirect) {
+      results.push({
+        test: 'Protected Route Redirect (Unauthenticated)',
+        status: 'fail',
+        message: `Redirected to ${locationHeader} instead of /login`,
         duration: Date.now() - test2Start,
       });
     } else {
       results.push({
         test: 'Protected Route Redirect (Unauthenticated)',
         status: 'fail',
-        message: 'Did not redirect to /login',
+        message: `No redirect detected (status: ${response.status})`,
         duration: Date.now() - test2Start,
       });
     }
