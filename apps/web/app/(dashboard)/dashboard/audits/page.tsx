@@ -84,13 +84,20 @@ export default function AuditsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to run audit');
+        const errorMsg = data.error || data.message || JSON.stringify(data) || 'Failed to run audit';
+        throw new Error(errorMsg);
       }
 
       setProgress(100);
       setResult(data.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      console.error('Audit error:', err);
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : typeof err === 'object' && err !== null
+        ? JSON.stringify(err, null, 2)
+        : 'An unexpected error occurred';
+      setError(errorMessage);
     } finally {
       clearInterval(progressInterval);
       setLoading(false);
