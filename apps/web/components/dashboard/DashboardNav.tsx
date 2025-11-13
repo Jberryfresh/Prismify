@@ -9,13 +9,16 @@ import {
   Settings,
   Sparkles,
   BarChart3,
+  Search,
+  History,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'SEO Audits', href: '/audits', icon: FileSearch },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Run Audit', href: '/dashboard/audits', icon: Search },
+  { name: 'Audit History', href: '/dashboard/audits/history', icon: History },
+  { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
 /**
