@@ -75,7 +75,7 @@ export default function TestAuthPage() {
             <Button
               onClick={handleRunTests}
               disabled={loading}
-              className="w-full sm:w-auto bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+              className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
             >
               {loading ? (
                 <>
