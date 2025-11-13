@@ -141,42 +141,38 @@ export default function RegisterPage() {
           </Alert>
         )}
 
-        {/* OAuth Buttons - Disabled until configured in Supabase */}
-        {false && (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                onClick={() => handleOAuthSignup('google')}
-                disabled={loading}
-                className="h-11"
-              >
-                <Mail className="mr-2 h-4 w-4" />
-                Google
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleOAuthSignup('github')}
-                disabled={loading}
-                className="h-11"
-              >
-                <Github className="mr-2 h-4 w-4" />
-                GitHub
-              </Button>
-            </div>
+        {/* OAuth Buttons */}
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            variant="outline"
+            onClick={() => handleOAuthSignup('google')}
+            disabled={loading}
+            className="h-11"
+          >
+            <Mail className="mr-2 h-4 w-4" />
+            Google
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => handleOAuthSignup('github')}
+            disabled={loading}
+            className="h-11"
+          >
+            <Github className="mr-2 h-4 w-4" />
+            GitHub
+          </Button>
+        </div>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white dark:bg-slate-950 px-2 text-slate-500">
-                  Or register with email
-                </span>
-              </div>
-            </div>
-          </>
-        )}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <Separator />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white dark:bg-slate-950 px-2 text-slate-500">
+              Or register with email
+            </span>
+          </div>
+        </div>
 
         {/* Registration Form */}
         <form onSubmit={handleRegister} className="space-y-4">
