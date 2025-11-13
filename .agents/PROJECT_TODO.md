@@ -599,6 +599,15 @@ Summary: Complete authentication UI with email/password flows, OAuth integration
 
 ---
 
+**⚠️ PHASE 4 COMPLETION REMINDER:**
+Before marking Phase 4 as fully complete, ensure the following items are addressed:
+
+- [ ] **4.1.2** - Dedicated pricing page with detailed plan comparison (optional, landing page has pricing section)
+- [ ] **4.1.3** - FAQ and documentation pages (marked as post-MVP, can defer)
+- [ ] Review all Phase 4 subtasks to ensure no critical items were skipped
+
+---
+
 # Phase 5 — Testing, Security, & Performance (PHASE 5)
 
 **Goal**: Ensure platform is secure, performant, and production-ready.  
