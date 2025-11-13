@@ -53,7 +53,7 @@ export default function TestAuthPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="h-12 w-12 rounded-lg bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
               <Sparkles className="h-6 w-6 text-white" />
             </div>
             <h1 className="text-3xl font-bold">Prismify Auth Tests</h1>
