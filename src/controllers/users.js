@@ -12,7 +12,7 @@ import authService from '../services/auth/authService.js';
  */
 export async function getCurrentUser(req, res) {
   try {
-    const supabase = createClient();
+    const supabase = req.supabase || createClient();
     const userId = req.user.id;
 
     // Get user data from users table
@@ -77,7 +77,7 @@ export async function getCurrentUser(req, res) {
  */
 export async function updateUser(req, res) {
   try {
-    const supabase = createClient();
+    const supabase = req.supabase || createClient();
     const userId = req.user.id;
     const { full_name, email, preferences } = req.body;
 
@@ -207,7 +207,7 @@ export async function updateUser(req, res) {
  */
 export async function deleteUser(req, res) {
   try {
-    const supabase = createClient();
+    const supabase = req.supabase || createClient();
     const userId = req.user.id;
     const { password } = req.body;
 
@@ -331,7 +331,7 @@ export async function deleteUser(req, res) {
  */
 export async function exportUserData(req, res) {
   try {
-    const supabase = createClient();
+    const supabase = req.supabase || createClient();
     const userId = req.user.id;
 
     // Get user profile

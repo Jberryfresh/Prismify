@@ -59,8 +59,6 @@ export default function RegisterPage() {
         setError(signUpError.message);
       } else {
         setSuccess(true);
-        // Redirect immediately after successful signup
-        router.push('/login');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -108,9 +106,12 @@ export default function RegisterPage() {
             Click the link to verify your account and get started with Prismify.
           </CardDescription>
         </CardHeader>
-        <CardFooter className="pt-6 border-t border-slate-200 dark:border-slate-800">
-          <p className="text-center text-sm text-slate-600 dark:text-slate-400 w-full">
-            Redirecting to login...
+        <CardFooter className="flex flex-col gap-3 pt-6 border-t border-slate-200 dark:border-slate-800">
+          <Button asChild className="w-full bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg">
+            <Link href="/login">Go to login</Link>
+          </Button>
+          <p className="text-center text-xs text-slate-500 dark:text-slate-400 w-full">
+            Didn&apos;t get the email? Check spam or resend from the login page.
           </p>
         </CardFooter>
       </Card>
@@ -121,8 +122,8 @@ export default function RegisterPage() {
     <Card className="shadow-2xl border-slate-200 dark:border-slate-800">
       <CardHeader className="space-y-1 text-center pb-6">
         <div className="flex items-center justify-center mb-4">
-          <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-            <Sparkles className="h-7 w-7 text-white" />
+          <div className="h-12 w-12 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+                  <Sparkles className="h-7 w-7 text-white" />
           </div>
         </div>
         <CardTitle className="text-2xl font-bold tracking-tight">
@@ -239,7 +240,7 @@ export default function RegisterPage() {
 
           <Button
             type="submit"
-            className="w-full h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg"
+            className="w-full h-11 bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg"
             disabled={loading}
           >
             {loading ? (

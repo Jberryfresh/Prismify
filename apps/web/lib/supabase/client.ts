@@ -11,7 +11,6 @@ export function createClient() {
   if (!url || !anon) {
     // Log full context to console for easier debugging in dev
     // (avoid leaking secrets in production logs)
-    // eslint-disable-next-line no-console
     console.error('[supabase] Missing env vars', {
       NEXT_PUBLIC_SUPABASE_URL: !!url,
       NEXT_PUBLIC_SUPABASE_ANON_KEY: !!anon,

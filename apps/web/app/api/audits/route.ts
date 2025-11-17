@@ -1,24 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { buildBackendUrl } from '@/lib/server/backend';
+import { getProxyAuthHeaders } from '@/lib/server/auth';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const AUDITS_ENDPOINT = buildBackendUrl('audits');
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const auth = await getProxyAuthHeaders();
 
-    if (!session) {
+    if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Forward request to backend API
-    const response = await fetch(`${BACKEND_URL}/api/audits`, {
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-      },
+    const response = await fetch(AUDITS_ENDPOINT, {
+      headers: auth.headers,
     });
 
     const data = await response.json();
@@ -34,23 +31,20 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const auth = await getProxyAuthHeaders();
 
-    if (!session) {
+    if (!auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
 
     // Forward request to backend API
-    const response = await fetch(`${BACKEND_URL}/api/audits`, {
+    const response = await fetch(AUDITS_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
+        ...auth.headers,
       },
       body: JSON.stringify(body),
     });

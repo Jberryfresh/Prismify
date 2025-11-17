@@ -32,7 +32,7 @@ export async function getUserTierAndQuotas(userId) {
       .single();
 
     if (error) {
-      throw error;
+      console.warn('Falling back to starter tier (failed to load user tier):', error.message);
     }
 
     const tier = user?.subscription_tier || 'starter';
@@ -44,7 +44,11 @@ export async function getUserTierAndQuotas(userId) {
     };
   } catch (error) {
     console.error('Error getting user tier:', error);
-    throw error;
+    return {
+      tier: 'starter',
+      quotas: TIER_QUOTAS.starter,
+      fallback: true,
+    };
   }
 }
 
@@ -102,7 +106,15 @@ export async function getCurrentMonthUsage(userId) {
     };
   } catch (error) {
     console.error('Error getting usage:', error);
-    throw error;
+    const now = new Date();
+    return {
+      audits_used: 0,
+      keywords_used: 0,
+      projects_created: 0,
+      period_start: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(),
+      period_end: new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString(),
+      fallback: true,
+    };
   }
 }
 

@@ -47,11 +47,15 @@ export default function AuditHistoryPage() {
       const response = await fetch('/api/audits');
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch audits');
+      if (!response.ok || data.success === false) {
+        const message =
+          data?.error?.message ||
+          (typeof data?.error === 'string' ? data.error : null) ||
+          'Failed to fetch audits';
+        throw new Error(message);
       }
 
-      setAudits(data.data || []);
+      setAudits((data.data as AuditHistoryItem[]) || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
@@ -59,13 +63,7 @@ export default function AuditHistoryPage() {
     }
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
-  };
-
-  const getScoreBadge = (score: number) => {
+  const getScoreBadge = (score: number): 'default' | 'secondary' | 'destructive' => {
     if (score >= 80) return 'default';
     if (score >= 60) return 'secondary';
     return 'destructive';
@@ -206,7 +204,7 @@ export default function AuditHistoryPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={getScoreBadge(audit.overall_score) as any}>
+                      <Badge variant={getScoreBadge(audit.overall_score)}>
                         {audit.overall_score}
                       </Badge>
                     </TableCell>
