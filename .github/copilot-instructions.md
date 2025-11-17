@@ -575,6 +575,7 @@ export async function POST(req: Request) {
 6. **Environment Variables**: NEXT*PUBLIC* prefix for client-side, no prefix for server-only
 7. **Audit Performance**: Run SEO audits asynchronously, never block user requests
 8. **Subscription Limits**: Enforce tier limits (audit counts, keywords) in middleware
+9. **Supabase Auth Context**: Next.js API proxies must forward the Supabase access token (Authorization: Bearer …) and backend routes must use the per-request Supabase client (`req.supabase`/`createClient({ accessToken })`) so RLS passes; only fall back to the admin client when `DEV_AUTH_BYPASS` is explicitly enabled for local dev.
 
 ## Phase Status & Roadmap
 

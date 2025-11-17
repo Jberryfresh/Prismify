@@ -27,6 +27,15 @@ export default [
     },
   },
   {
-    ignores: ['node_modules/**', 'dist/**', 'build/**', 'coverage/**', '*.min.js'],
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      'build/**',
+      'coverage/**',
+      '*.min.js',
+      '.next/**',
+      '**/.next/**',
+      'apps/web/.next/**',
+    ],
   },
 ];

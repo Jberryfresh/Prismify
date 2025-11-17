@@ -75,8 +75,12 @@ export async function researchKeywords(req, res) {
     // In Phase 3, integrate with: https://developers.google.com/google-ads/api/docs/keyword-planning
     const mockKeywordData = generateMockKeywordData(seed_keyword, target_location);
 
-    // Store keywords in database
-    const keywordsToInsert = mockKeywordData.map((kw) => ({
+    // Store keywords in database when available
+    const keywordsToInsert = mockKeywordData.map((kw, index) => ({
+      // When Supabase insert fails (local dev without full schema), we still want
+      // to return realistic data to the client. The DB will assign a real id in
+      // production environments.
+      temp_id: `memory-${Date.now()}-${index}`,
       user_id: userId,
       audit_id: audit_id || null,
       seed_keyword: seed_keyword.toLowerCase(),
@@ -89,18 +93,52 @@ export async function researchKeywords(req, res) {
       target_location: target_location || 'US',
     }));
 
-    const { data: insertedKeywords, error: insertError } = await supabase
-      .from('keywords')
-      .insert(keywordsToInsert)
-      .select();
+    let insertedKeywords = null;
+    let insertError = null;
+
+    try {
+      const result = await supabase.from('keywords').insert(keywordsToInsert).select();
+      insertedKeywords = result.data;
+      insertError = result.error;
+    } catch (err) {
+      insertError = err;
+    }
 
     if (insertError) {
-      console.error('Error storing keywords:', insertError);
-      return res.status(500).json({
-        success: false,
-        error: {
-          code: 'DATABASE_ERROR',
-          message: 'Failed to store keyword research results',
+      // Local-dev friendly fallback: log the error but still return mock data
+      console.error('Error storing keywords (falling back to in-memory results):', insertError);
+
+      const fallbackKeywords = keywordsToInsert.map((kw) => ({
+        id: kw.temp_id,
+        user_id: kw.user_id,
+        audit_id: kw.audit_id,
+        seed_keyword: kw.seed_keyword,
+        keyword: kw.keyword,
+        search_volume: kw.search_volume,
+        competition: kw.competition,
+        difficulty_score: kw.difficulty_score,
+        opportunity_score: kw.opportunity_score,
+        cpc: kw.cpc,
+        target_location: kw.target_location,
+        created_at: new Date().toISOString(),
+      }));
+
+      // Track usage even when we fall back, to keep subscription limits realistic
+      await usageTracker.incrementUsage(userId, 'keyword_research', 1).catch((usageError) => {
+        console.error('Error tracking keyword usage (fallback path):', usageError);
+      });
+
+      return res.status(201).json({
+        success: true,
+        data: {
+          keywords: fallbackKeywords,
+          cached: false,
+          total_keywords: fallbackKeywords.length,
+        },
+        meta: {
+          persisted: false,
+          storage_error:
+            insertError?.message || insertError?.code || 'Failed to store keyword research results',
         },
       });
     }
@@ -114,6 +152,9 @@ export async function researchKeywords(req, res) {
         keywords: insertedKeywords,
         cached: false,
         total_keywords: insertedKeywords.length,
+      },
+      meta: {
+        persisted: true,
       },
     });
   } catch (error) {

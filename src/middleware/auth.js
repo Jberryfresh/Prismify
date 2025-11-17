@@ -20,6 +20,42 @@
  */
 
 import { authService } from '../services/auth/authService.js';
+import { createClient } from '../config/supabase.js';
+import { ensureUserProfile } from '../services/users/userProfileSync.js';
+
+const devAuthBypassEnabled = process.env.DEV_AUTH_BYPASS === 'true';
+const devFallbackUser = {
+  id: process.env.DEV_FAKE_USER_ID || '00000000-0000-0000-0000-000000000001',
+  email: process.env.DEV_FAKE_USER_EMAIL || 'dev@prismify.local',
+  user_metadata: {
+    role: 'developer',
+  },
+  app_metadata: {
+    role: 'developer',
+    provider: 'dev-bypass',
+  },
+};
+
+function applyDevBypass(req, res, next) {
+  if (!devAuthBypassEnabled) {
+    return false;
+  }
+
+  req.user = devFallbackUser;
+  req.userId = devFallbackUser.id;
+  req.accessToken = null;
+  try {
+    req.supabase = createClient({ admin: true });
+  } catch (error) {
+    console.error('[auth] Failed to create admin Supabase client for DEV_AUTH_BYPASS:', error);
+    req.supabase = null;
+  }
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn('[auth] DEV_AUTH_BYPASS active – request authorized as dev user');
+  }
+  next();
+  return true;
+}
 
 /**
  * Extract JWT token from request headers
@@ -62,6 +98,9 @@ export async function requireAuth(req, res, next) {
     const token = extractToken(req);
 
     if (!token) {
+      if (applyDevBypass(req, res, next)) {
+        return;
+      }
       return res.status(401).json({
         success: false,
         error: {
@@ -75,6 +114,9 @@ export async function requireAuth(req, res, next) {
     const { user, error } = await authService.verifyToken(token);
 
     if (error || !user) {
+      if (applyDevBypass(req, res, next)) {
+        return;
+      }
       return res.status(401).json({
         success: false,
         error: {
@@ -87,6 +129,9 @@ export async function requireAuth(req, res, next) {
     // Attach user to request object
     req.user = user;
     req.userId = user.id;
+    req.accessToken = token;
+    req.supabase = createClient({ accessToken: token });
+    await ensureUserProfile(user);
 
     next();
   } catch (error) {
@@ -116,6 +161,21 @@ export async function optionalAuth(req, res, next) {
     const token = extractToken(req);
 
     if (!token) {
+      if (devAuthBypassEnabled) {
+        req.user = devFallbackUser;
+        req.userId = devFallbackUser.id;
+        req.accessToken = null;
+        try {
+          req.supabase = createClient({ admin: true });
+        } catch (error) {
+          console.error(
+            '[auth] Failed to create admin Supabase client for optional DEV_AUTH_BYPASS:',
+            error
+          );
+          req.supabase = null;
+        }
+        return next();
+      }
       req.user = null;
       req.userId = null;
       return next();
@@ -125,13 +185,33 @@ export async function optionalAuth(req, res, next) {
     const { user, error } = await authService.verifyToken(token);
 
     if (error || !user) {
-      // Don't block request, just log the issue
-      console.warn('optionalAuth: Invalid token provided:', error?.message);
-      req.user = null;
-      req.userId = null;
+      if (devAuthBypassEnabled) {
+        req.user = devFallbackUser;
+        req.userId = devFallbackUser.id;
+        req.accessToken = null;
+        try {
+          req.supabase = createClient({ admin: true });
+        } catch (devError) {
+          console.error(
+            '[auth] Failed to create admin Supabase client for optional DEV_AUTH_BYPASS (invalid token):',
+            devError
+          );
+          req.supabase = null;
+        }
+      } else {
+        // Don't block request, just log the issue
+        console.warn('optionalAuth: Invalid token provided:', error?.message);
+        req.user = null;
+        req.userId = null;
+        req.accessToken = null;
+        req.supabase = null;
+      }
     } else {
       req.user = user;
       req.userId = user.id;
+      req.accessToken = token;
+      req.supabase = createClient({ accessToken: token });
+      await ensureUserProfile(user);
     }
 
     next();
@@ -140,6 +220,8 @@ export async function optionalAuth(req, res, next) {
     // Don't block request on error
     req.user = null;
     req.userId = null;
+    req.accessToken = null;
+    req.supabase = null;
     next();
   }
 }

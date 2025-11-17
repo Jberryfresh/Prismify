@@ -38,7 +38,10 @@ if (missingVars.length > 0) {
  * - Real-time subscriptions
  * - Storage operations
  */
-const supabase = createSupabaseClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
+const supabase = createSupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
@@ -56,13 +59,31 @@ const supabase = createSupabaseClient(process.env.SUPABASE_URL, process.env.SUPA
  * - System-level queries
  */
 const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
-  ? createSupabaseClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+  ? createSupabaseClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
       auth: {
         autoRefreshToken: false,
         persistSession: false,
       },
     })
   : null;
+
+function createScopedClient(accessToken) {
+  if (!accessToken) {
+    return supabase;
+  }
+
+  return createSupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
 
 /**
  * Create Supabase client (factory function)
@@ -84,6 +105,9 @@ export function createClient(options = {}) {
       throw new Error('Admin client not available. Set SUPABASE_SERVICE_ROLE_KEY in .env');
     }
     return supabaseAdmin;
+  }
+  if (options.accessToken) {
+    return createScopedClient(options.accessToken);
   }
   return supabase;
 }

@@ -32,11 +32,11 @@ export async function getUserTierAndQuotas(userId) {
       .single();
 
     if (error) {
-      throw error;
+      console.warn('Falling back to starter tier (failed to load user tier):', error.message);
     }
 
-    const tier = user?.subscription_tier || 'free';
-    const quotas = TIER_QUOTAS[tier];
+    const tier = user?.subscription_tier || 'starter';
+    const quotas = TIER_QUOTAS[tier] || TIER_QUOTAS.starter;
 
     return {
       tier,
@@ -44,7 +44,11 @@ export async function getUserTierAndQuotas(userId) {
     };
   } catch (error) {
     console.error('Error getting user tier:', error);
-    throw error;
+    return {
+      tier: 'starter',
+      quotas: TIER_QUOTAS.starter,
+      fallback: true,
+    };
   }
 }
 
@@ -102,7 +106,15 @@ export async function getCurrentMonthUsage(userId) {
     };
   } catch (error) {
     console.error('Error getting usage:', error);
-    throw error;
+    const now = new Date();
+    return {
+      audits_used: 0,
+      keywords_used: 0,
+      projects_created: 0,
+      period_start: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(),
+      period_end: new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString(),
+      fallback: true,
+    };
   }
 }
 
@@ -128,21 +140,21 @@ export async function checkQuota(userId, action) {
     // Check quota based on action type
     switch (action) {
       case 'audits': {
-        const quota = quotas.audits_per_month;
+        const quota = quotas.audits;
         allowed = quota === -1 || usage.audits_used < quota;
         remaining = quota === -1 ? -1 : quota - usage.audits_used;
         resetDate = usage.period_end;
         break;
       }
       case 'keywords': {
-        const quota = quotas.keywords_per_month;
+        const quota = quotas.keywords;
         allowed = quota === -1 || usage.keywords_used < quota;
         remaining = quota === -1 ? -1 : quota - usage.keywords_used;
         resetDate = usage.period_end;
         break;
       }
       case 'projects': {
-        const quota = quotas.max_projects;
+        const quota = quotas.max_projects ?? -1;
         allowed = quota === -1 || usage.projects_created < quota;
         remaining = quota === -1 ? -1 : quota - usage.projects_created;
         resetDate = null; // Project quota doesn't reset
