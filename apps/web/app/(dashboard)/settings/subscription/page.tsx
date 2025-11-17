@@ -104,7 +104,7 @@ export default function SubscriptionSettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-height-[300px]">
+  <div className="flex items-center justify-center min-h-[300px]">
         <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
       </div>
     );
