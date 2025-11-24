@@ -42,7 +42,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.69.0",
     "@google/generative-ai": "^0.24.1",
-    "@supabase/supabase-js": "^2.81.1",
+    "@supabase/supabase-js": "^2.84.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
