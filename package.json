@@ -40,7 +40,7 @@
   "author": "Prismify Team",
   "license": "MIT",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.69.0",
+    "@anthropic-ai/sdk": "^0.70.1",
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.81.1",
     "cors": "^2.8.5",
